@@ -40,7 +40,7 @@ const AdminDashboard = () => {
         <StatCard title="Total Users" value={stats?.totalUsers || 0} subtitle={`${stats?.totalStudents || 0} students`} />
         <StatCard title="Total Courses" value={stats?.totalCourses || 0} subtitle={`${stats?.publishedCourses || 0} published`} />
         <StatCard title="Total Enrollments" value={stats?.totalEnrollments || 0} />
-        <StatCard title="Total Revenue" value={formatPrice(stats?.totalRevenue || 2)} />
+        <StatCard title="Total Revenue" value={formatPrice(stats?.totalRevenue ?? 0)} />
       </div>
 
       <div className="card">

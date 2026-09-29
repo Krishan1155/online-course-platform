@@ -41,27 +41,47 @@ export const enrollFreeCourse = asyncHandler(async (req, res) => {
 });
 
 export const getMyEnrollments = asyncHandler(async (req, res) => {
-  const enrollments = await Enrollment.find({ user: req.user._id })
+
+  const enrollments = await Enrollment.find({
+    user: req.user._id,
+    //status: 'active',
+  })
     .populate({
       path: 'course',
-      select: 'title description thumbnail price category level instructor totalLessons totalDuration',
+      select:
+        'title description thumbnail price category level instructor totalLessons totalDuration',
     })
     .sort({ enrolledAt: -1 });
 
+  // Remove old enrollments whose course was deleted
+  const validEnrollments = enrollments.filter(
+    (enrollment) => enrollment.course !== null
+  );
+
   const enrollmentsWithProgress = await Promise.all(
-    enrollments.map(async (enrollment) => {
+    validEnrollments.map(async (enrollment) => {
+
       const progress = await Progress.findOne({
         user: req.user._id,
         course: enrollment.course._id,
       });
+
       return {
         ...enrollment.toObject(),
-        progress: progress || { progressPercentage: 0, completedLessons: [] },
+
+        progress: progress || {
+          progressPercentage: 0,
+          completedLessons: [],
+        },
       };
     })
   );
 
-  res.json({ success: true, count: enrollmentsWithProgress.length, data: enrollmentsWithProgress });
+  res.json({
+    success: true,
+    count: enrollmentsWithProgress.length,
+    data: enrollmentsWithProgress,
+  });
 });
 
 export const checkEnrollment = asyncHandler(async (req, res) => {
@@ -70,7 +90,13 @@ export const checkEnrollment = asyncHandler(async (req, res) => {
     course: req.params.courseId,
   });
 
-  res.json({ success: true, data: { isEnrolled: !!enrollment, enrollment } });
+  res.json({
+    success: true,
+    data: {
+      isEnrolled: !!enrollment,
+      enrollment,
+    },
+  });
 });
 
 export const getCourseContent = asyncHandler(async (req, res) => {

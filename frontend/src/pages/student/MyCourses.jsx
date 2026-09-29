@@ -62,25 +62,34 @@ const MyCourses = () => {
                   <p className="mb-3 text-sm text-gray-500">By {course.instructor}</p>
 
                   <div className="mb-3">
-                    <div className="mb-1 flex justify-between text-xs text-gray-500">
-                      <span>Progress</span>
-                      <span>{progress}%</span>
-                    </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-gray-200">
-                      <div
-                        className="h-full rounded-full bg-primary-600 transition-all"
-                        style={{ width: `${progress}%` }}
-                      />
-                    </div>
-                  </div>
+  <div className="mb-1 flex justify-between text-xs">
+    <span className={progress === 100 ? 'font-medium text-green-600' : 'text-gray-500'}>
+      {progress === 100 ? '✓ Completed' : 'Progress'}
+    </span>
+
+    <span className="font-medium text-gray-600">
+      {progress}%
+    </span>
+  </div>
+
+  <div className="h-2 overflow-hidden rounded-full bg-gray-200">
+    <div
+      className="h-full rounded-full bg-primary-600 transition-all"
+      style={{ width: `${progress}%` }}
+    />
+  </div>
+</div>
 
                   <div className="mb-4 text-xs text-gray-500">
                     {course.totalLessons || 0} lessons · {formatDuration(course.totalDuration)}
                   </div>
 
-                  <Link to={`/learn/${course._id}`} className="btn-primary w-full text-center">
-                    Continue Learning
-                  </Link>
+                 <Link
+  to={`/learn/${course._id}`}
+  className="btn-primary w-full text-center"
+>
+  {progress === 100 ? 'View Course' : 'Continue Learning'}
+</Link>
                 </div>
               </div>
             );
