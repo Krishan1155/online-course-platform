@@ -30,7 +30,7 @@ const Navbar = () => {
           <NavLink to="/courses" className={linkClass}>
             Courses
           </NavLink>
-          {isAuthenticated && !isAdmin && (
+          {isAuthenticated && (
             <NavLink to="/my-courses" className={linkClass}>
               My Courses
             </NavLink>
