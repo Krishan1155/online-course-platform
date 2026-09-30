@@ -20,8 +20,13 @@ const seedAdmin = async () => {
         isVerified: true,
       });
       console.log(`Admin user created: ${adminEmail}`);
-    } else {
-      console.log('Admin user already exists');
+    } 
+    else 
+    {
+      adminExists.role= 'admin';
+      adminExists.isVerified=true;
+      await adminExists.save();
+      console.log('Admin role ensured for: ${adminEmail}');
     }
 
     process.exit(0);
