@@ -1,16 +1,18 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate} from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Alert from '../../components/Alert';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Register = () => {
+  const navigate = useNavigate();
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [verificationUrl, setVerificationUrl] = useState('');
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const { register,googleLogin} = useAuth();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -44,6 +46,27 @@ const Register = () => {
       setLoading(false);
     }
   };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+  setError('');
+  setLoading(true);
+
+  try {
+    const userData = await googleLogin(
+      credentialResponse.credential
+    );
+
+    navigate(userData.role === 'admin' ? '/admin' : '/');
+  } catch (err) {
+    setError(
+      err.response?.data?.message ||
+      err.message ||
+      'Google registration failed'
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-12">
@@ -81,6 +104,23 @@ const Register = () => {
               {loading ? <LoadingSpinner size="sm" /> : 'Create Account'}
             </button>
           </form>
+
+          <div className="my-5 flex items-center gap-3">
+  <div className="h-px flex-1 bg-gray-200"></div>
+
+  <span className="text-sm text-gray-400">OR</span>
+
+  <div className="h-px flex-1 bg-gray-200"></div>
+</div>
+
+<div className="flex justify-center">
+  <GoogleLogin
+    onSuccess={handleGoogleSuccess}
+    onError={() => setError('Google registration failed')}
+    useOneTap={false}
+    text="continue_with"
+  />
+</div>
 
           <p className="mt-6 text-center text-sm text-gray-500">
             Already have an account?{' '}

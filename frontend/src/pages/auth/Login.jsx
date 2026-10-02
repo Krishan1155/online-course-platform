@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { GoogleLogin } from '@react-oauth/google';
 import Alert from '../../components/Alert';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
@@ -9,8 +10,29 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login,googleLogin} = useAuth();
   const navigate = useNavigate();
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+  setError('');
+  setLoading(true);
+
+  try {
+    const userData = await googleLogin(
+      credentialResponse.credential
+    );
+
+    navigate(userData.role === 'admin' ? '/admin' : '/');
+  } catch (err) {
+    setError(
+      err.response?.data?.message ||
+      err.message ||
+      'Google login failed'
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -68,6 +90,21 @@ const Login = () => {
               {loading ? <LoadingSpinner size="sm" /> : 'Sign In'}
             </button>
           </form>
+
+          <div className="my-5 flex items-center gap-3">
+  <div className="h-px flex-1 bg-gray-200"></div>
+  <span className="text-sm text-gray-400">OR</span>
+  <div className="h-px flex-1 bg-gray-200"></div>
+</div>
+
+<div className="flex justify-center">
+  <GoogleLogin
+    onSuccess={handleGoogleSuccess}
+    onError={() => setError('Google login failed')}
+    useOneTap={false}
+    text="signin_with"
+  />
+</div>
 
           <p className="mt-6 text-center text-sm text-gray-500">
             Don&apos;t have an account?{' '}

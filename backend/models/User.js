@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Name is required'],
       trim: true,
     },
+
     email: {
       type: String,
       required: [true, 'Email is required'],
@@ -15,35 +16,48 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+
     password: {
       type: String,
       required: [true, 'Password is required'],
       minlength: 6,
       select: false,
     },
+
     role: {
       type: String,
       enum: ['student', 'admin'],
       default: 'student',
     },
+
     isVerified: {
       type: Boolean,
       default: false,
     },
+
     verificationToken: String,
-    verificationTokenExpire: Date,
+
+    verificationTokenExpire: {
+      type: Date,
+      expires: 0,
+    },
+
     resetPasswordToken: String,
+
     resetPasswordExpire: Date,
+
     avatar: {
       type: String,
       default: '',
     },
   },
+
   { timestamps: true }
 );
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
+
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
@@ -53,4 +67,5 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 };
 
 const User = mongoose.model('User', userSchema);
+
 export default User;

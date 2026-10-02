@@ -1,8 +1,13 @@
 import crypto from 'crypto';
+import { OAuth2Client } from 'google-auth-library';
 import asyncHandler from 'express-async-handler';
 import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
 import sendEmail, { isEmailConfigured } from '../utils/sendEmail.js';
+
+const googleClient = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID
+);
 
 const getVerificationEmailHtml = (name, url) => `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -122,8 +127,82 @@ export const login = asyncHandler(async (req, res) => {
     throw new Error('Invalid email or password');
   }
 
+  if (!user.isVerified) {
+    res.status(403);
+    throw new Error('Please verify your email before logging in');
+  }
+
   res.json({
     success: true,
+    data: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      isVerified: user.isVerified,
+      token: generateToken(user._id, user.role),
+    },
+  });
+});
+
+
+
+// GOOGLE LOGIN
+export const googleLogin = asyncHandler(async (req, res) => {
+  const { credential } = req.body;
+
+  if (!credential) {
+    res.status(400);
+    throw new Error('Google credential is required');
+  }
+
+  const ticket = await googleClient.verifyIdToken({
+    idToken: credential,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+
+  const payload = ticket.getPayload();
+
+  if (!payload) {
+    res.status(401);
+    throw new Error('Invalid Google token');
+  }
+
+  const {
+    sub: googleId,
+    email,
+    name,
+    email_verified,
+  } = payload;
+
+  if (!email_verified) {
+    res.status(401);
+    throw new Error('Google email is not verified');
+  }
+
+  let user = await User.findOne({ email });
+
+  // Create new user
+  if (!user) {
+    user = await User.create({
+      name: name || 'Google User',
+      email,
+      password: crypto.randomBytes(32).toString('hex'),
+      role: 'student',
+      isVerified: true,
+    });
+  } else {
+    // Existing account
+     user.isVerified = true;
+  user.verificationToken = undefined;
+  user.verificationTokenExpire = undefined;
+
+  await user.save();
+  }
+
+  res.json({
+    success: true,
+    message: 'Google login successful',
     data: {
       _id: user._id,
       name: user.name,
