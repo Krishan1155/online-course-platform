@@ -38,9 +38,6 @@ const AdminLayout = () => {
             <NavLink to="/admin/enrollments" className={linkClass}>
               Enrollments
             </NavLink>
-            <NavLink to="/admin/payment-requests" className={linkClass}>
-              Payment Requests
-            </NavLink>
             <NavLink to="/admin/revenue" className={linkClass}>
               Revenue
             </NavLink>

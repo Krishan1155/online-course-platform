@@ -6,7 +6,6 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Courses from './pages/student/Courses';
 import CourseDetail from './pages/student/CourseDetail';
-import PaymentForm from './pages/student/PaymentForm';
 import MyCourses from './pages/student/MyCourses';
 import Learn from './pages/student/Learn';
 
@@ -23,7 +22,7 @@ import EditCourse from './pages/admin/EditCourse';
 import AdminUsers from './pages/admin/Users';
 import AdminEnrollments from './pages/admin/Enrollments';
 import AdminRevenue from './pages/admin/Revenue';
-import AdminPaymentRequests from './pages/admin/PaymentRequests';
+
 
 function App() {
   return (
@@ -32,14 +31,6 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/courses" element={<Courses />} />
         <Route path="/courses/:id" element={<CourseDetail />} />
-        <Route
-          path="/courses/:courseId/payment"
-          element={
-            <ProtectedRoute>
-              <PaymentForm />
-            </ProtectedRoute>
-          }
-        />
         <Route
           path="/my-courses"
           element={
@@ -77,7 +68,6 @@ function App() {
         <Route path="courses/edit/:id" element={<EditCourse />} />
         <Route path="users" element={<AdminUsers />} />
         <Route path="enrollments" element={<AdminEnrollments />} />
-        <Route path="payment-requests" element={<AdminPaymentRequests />} />
         <Route path="revenue" element={<AdminRevenue />} />
       </Route>
     </Routes>

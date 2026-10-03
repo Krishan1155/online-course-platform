@@ -15,7 +15,7 @@ const CourseDetail = () => {
   const [enrolling, setEnrolling] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [paymentStatus, setPaymentStatus] = useState(null);
+  
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -23,14 +23,6 @@ const CourseDetail = () => {
         const { data } = await api.get(`/courses/${id}`);
         setCourse(data.data);
 
-        if (isAuthenticated && data.data.price > 0 && !data.data.isEnrolled) {
-          try {
-            const statusRes = await api.get(`/payment-requests/status/${id}`);
-            setPaymentStatus(statusRes.data.data.paymentStatus);   
-          } catch {
-            setPaymentStatus(null);
-          }
-        }
       } catch (err) {
         setError(err.message);
       } finally {
@@ -60,13 +52,6 @@ const CourseDetail = () => {
     }
   };
 
-  const handleManualPayment = () => {
-    if (!isAuthenticated) {
-      navigate('/login', { state: { from: `/courses/${id}/payment` } });
-      return;
-    }
-    navigate(`/courses/${id}/payment`);
-  };
 
   const handlePayment = async () => {
     if (!isAuthenticated) {
@@ -218,43 +203,24 @@ const CourseDetail = () => {
             </div>
 
             {course.isEnrolled ? (
-              <Link to={`/learn/${course._id}`} className="btn-primary w-full">
-                Continue Learning
-              </Link>
-            ) : paymentStatus === 'pending' ? (
-              <div className="space-y-3">
-                <div className="rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800">
-                  Your payment request has been submitted successfully. Please wait until admin
-                  verifies your payment.
-                </div>
-                <Link to={`/courses/${course._id}/payment`} className="btn-secondary w-full">
-                  View Payment Details
-                </Link>
-              </div>
-            ) : paymentStatus === 'rejected' ? (
-              <div className="space-y-3">
-                <div className="rounded-lg bg-red-50 p-3 text-sm text-red-800">
-                  Your payment was rejected. Please upload a valid payment screenshot.
-                </div>
-                <button onClick={handleManualPayment} className="btn-primary w-full">
-                  Submit Payment Again
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={course.price === 0 ? handleFreeEnroll : handleManualPayment}
-                disabled={enrolling}
-                className="btn-primary w-full"
-              >
-                {enrolling ? (
-                  <LoadingSpinner size="sm" />
-                ) : course.price === 0 ? (
-                  'Enroll for Free'
-                ) : (
-                  'Enroll Course'
-                )}
-              </button>
-            )}
+  <Link to={`/learn/${course._id}`} className="btn-primary w-full">
+    Continue Learning
+  </Link>
+) : (
+  <button
+    onClick={course.price === 0 ? handleFreeEnroll : handlePayment}
+    disabled={enrolling}
+    className="btn-primary w-full"
+  >
+    {enrolling ? (
+      <LoadingSpinner size="sm" />
+    ) : course.price === 0 ? (
+      'Enroll for Free'
+    ) : (
+      'Pay with Razorpay'
+    )}
+  </button>
+)}
 
             <ul className="mt-6 space-y-2 text-sm text-gray-600">
               <li>✓ Full lifetime access</li>

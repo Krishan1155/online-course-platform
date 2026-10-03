@@ -14,7 +14,6 @@ import lessonRoutes from './routes/lessonRoutes.js';
 import enrollmentRoutes from './routes/enrollmentRoutes.js';
 import progressRoutes from './routes/progressRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
-import paymentRequestRoutes from './routes/paymentRequestRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 
 dotenv.config();
@@ -52,7 +51,6 @@ app.use('/api/lessons', lessonRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/payment-requests', paymentRequestRoutes);
 app.use('/api/admin', adminRoutes);
 
 app.use(notFound);

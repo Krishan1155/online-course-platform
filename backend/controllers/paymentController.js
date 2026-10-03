@@ -87,15 +87,27 @@ export const verifyPayment = asyncHandler(async (req, res) => {
   }
 
   const payment = await Payment.findById(paymentId);
-  if (!payment) {
-    res.status(404);
-    throw new Error('Payment record not found');
-  }
 
-  payment.razorpayPaymentId = razorpay_payment_id;
-  payment.razorpaySignature = razorpay_signature;
-  payment.status = 'paid';
-  await payment.save();
+if (!payment) {
+  res.status(404);
+  throw new Error('Payment record not found');
+}
+
+if (payment.razorpayOrderId !== razorpay_order_id) {
+  res.status(400);
+  throw new Error('Order ID mismatch');
+}
+
+if (payment.status === 'paid') {
+  res.status(400);
+  throw new Error('Payment has already been verified');
+}
+
+payment.razorpayPaymentId = razorpay_payment_id;
+payment.razorpaySignature = razorpay_signature;
+payment.status = 'paid';
+
+await payment.save();
 
   const existingEnrollment = await Enrollment.findOne({
     user: payment.user,
