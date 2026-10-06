@@ -25,10 +25,10 @@ const lessonSchema = new mongoose.Schema(
       default: '',
     },
 
-    // video / document / coding
+    // video / document 
     contentType: {
       type: String,
-      enum: ['video', 'document', 'coding'],
+      enum: ['video', 'document'],
       default: 'video',
     },
 
@@ -64,19 +64,6 @@ const lessonSchema = new mongoose.Schema(
       default: '',
     },
 
-    // =====================================================
-    // CODING
-    // =====================================================
-
-    codingQuestion: {
-      type: String,
-      default: '',
-    },
-
-    starterCode: {
-      type: String,
-      default: '',
-    },
 
     // =====================================================
     // COMMON

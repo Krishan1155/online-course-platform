@@ -52,9 +52,6 @@ const emptyLessonForm = {
 
 
 
-  codingQuestion: '',
-
-  starterCode: '',
 
 
 
@@ -803,33 +800,6 @@ const EditCourse = () => {
 
       // -----------------------------------------------
 
-      // Coding validation
-
-      // -----------------------------------------------
-
-
-
-      if (
-
-        lessonForm.contentType ===
-
-        'coding' &&
-
-        !lessonForm.codingQuestion?.trim()
-
-      ) {
-
-        setError(
-
-          'Coding question is required'
-
-        );
-
-
-
-        return;
-
-      }
 
 
 
@@ -1045,41 +1015,6 @@ const EditCourse = () => {
 
         // ---------------------------------------------
 
-        // CODING
-
-        // ---------------------------------------------
-
-
-
-        if (
-
-          lessonForm.contentType ===
-
-          'coding'
-
-        ) {
-
-          formData.append(
-
-            'codingQuestion',
-
-            lessonForm.codingQuestion
-
-          );
-
-
-
-          formData.append(
-
-            'starterCode',
-
-            lessonForm.starterCode ||
-
-            ''
-
-          );
-
-        }
 
 
         // ---------------------------------------------
@@ -1304,8 +1239,6 @@ const EditCourse = () => {
       documentUrl: lesson.documentUrl || '',
       documentFile: null,
       documentText: lesson.documentText || '',
-      codingQuestion: lesson.codingQuestion || '',
-      starterCode: lesson.starterCode || '',
       duration: lesson.duration || 0,
       description: lesson.description || '',
     });
@@ -1358,10 +1291,6 @@ const EditCourse = () => {
       }
     }
 
-    if (lessonForm.contentType === 'coding' && !lessonForm.codingQuestion?.trim()) {
-      setError('Coding question is required');
-      return;
-    }
 
     try {
       setUpdatingLesson(true);
@@ -1390,10 +1319,6 @@ const EditCourse = () => {
         }
       }
 
-      if (lessonForm.contentType === 'coding') {
-        formData.append('codingQuestion', lessonForm.codingQuestion);
-        formData.append('starterCode', lessonForm.starterCode || '');
-      }
 
       const { data } = await api.put(
         `/lessons/${editingLessonId}`,
@@ -2256,7 +2181,6 @@ const EditCourse = () => {
                           <span className="flex items-center gap-2">
                             {lesson.contentType === 'video' && '🎥'}
                             {lesson.contentType === 'document' && '📄'}
-                            {lesson.contentType === 'coding' && '💻'}
                             <span>{lesson.title}</span>
                           </span>
                           <div className="flex items-center gap-3">
@@ -2284,7 +2208,6 @@ const EditCourse = () => {
                                 <select className="input-field" value={editLessonForm.contentType} onChange={(e) => handleEditLessonFormChange('contentType', e.target.value)}>
                                   <option value="video">🎥 Video</option>
                                   <option value="document">📄 Document</option>
-                                  <option value="coding">💻 Coding Exercise</option>
                                 </select>
                               </div>
 
@@ -2332,19 +2255,6 @@ const EditCourse = () => {
                                       <textarea rows={10} className="input-field" value={editLessonForm.documentText} onChange={(e) => handleEditLessonFormChange('documentText', e.target.value)} />
                                     </div>
                                   )}
-                                </>
-                              )}
-
-                              {editLessonForm.contentType === 'coding' && (
-                                <>
-                                  <div>
-                                    <label className="mb-1 block text-sm font-medium">Coding Question</label>
-                                    <textarea rows={6} className="input-field" value={editLessonForm.codingQuestion} onChange={(e) => handleEditLessonFormChange('codingQuestion', e.target.value)} />
-                                  </div>
-                                  <div>
-                                    <label className="mb-1 block text-sm font-medium">Starter Code</label>
-                                    <textarea rows={8} className="input-field font-mono" value={editLessonForm.starterCode} onChange={(e) => handleEditLessonFormChange('starterCode', e.target.value)} />
-                                  </div>
                                 </>
                               )}
 
@@ -2459,13 +2369,6 @@ const EditCourse = () => {
 
                         </option>
 
-
-
-                        <option value="coding">
-
-                          💻 Coding Exercise
-
-                        </option>
 
 
 
@@ -2841,7 +2744,7 @@ const EditCourse = () => {
 
                                   className="input-field"
 
-                                  placeholder="https\://react.dev/learn"
+                                  placeholder="https://react.dev/learn"
 
                                   value={
 
@@ -3023,177 +2926,6 @@ const EditCourse = () => {
 
 
 
-                    {/* =================================
-
-                        CODING
-
-                    ================================= */}
-
-
-
-                    {lessonForm.contentType ===
-
-                      'coding' && (
-
-                        <>
-
-
-
-                          <div>
-
-
-
-                            <label className="mb-1 block text-sm font-medium">
-
-                              Coding Question
-
-                            </label>
-
-
-
-                            <textarea
-
-                              rows={6}
-
-                              className="input-field"
-
-                              placeholder="Write the coding problem..."
-
-                              value={
-
-                                lessonForm.codingQuestion
-
-                              }
-
-                              onChange={(e) =>
-
-                                updateLessonForm(
-
-                                  module._id,
-
-                                  'codingQuestion',
-
-                                  e.target.value
-
-                                )
-
-                              }
-
-                            />
-
-
-
-                          </div>
-
-
-
-
-
-                          <div>
-
-
-
-                            <label className="mb-1 block text-sm font-medium">
-
-                              Starter Code
-
-                            </label>
-
-
-
-                            <textarea
-
-                              rows={8}
-
-                              className="input-field font-mono"
-
-                              placeholder="Write starter code..."
-
-                              value={
-
-                                lessonForm.starterCode
-
-                              }
-
-                              onChange={(e) =>
-
-                                updateLessonForm(
-
-                                  module._id,
-
-                                  'starterCode',
-
-                                  e.target.value
-
-                                )
-
-                              }
-
-                            />
-
-
-
-                          </div>
-
-
-
-
-
-                          <div>
-
-
-
-                            <label className="mb-1 block text-sm font-medium">
-
-                              Estimated Duration (minutes)
-
-                            </label>
-
-
-
-                            <input
-
-                              type="number"
-
-                              min="0"
-
-                              className="input-field"
-
-                              value={
-
-                                lessonForm.duration
-
-                              }
-
-                              onChange={(e) =>
-
-                                updateLessonForm(
-
-                                  module._id,
-
-                                  'duration',
-
-                                  Number(
-
-                                    e.target.value
-
-                                  )
-
-                                )
-
-                              }
-
-                            />
-
-
-
-                          </div>
-
-
-
-                        </>
-
-                      )}
 
 
 

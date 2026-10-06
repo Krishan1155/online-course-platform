@@ -20,6 +20,7 @@ import enrollmentRoutes from './routes/enrollmentRoutes.js';
 import progressRoutes from './routes/progressRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import reviewRoutes from './routes/reviewRoutes.js';
 
 dotenv.config();
 
@@ -179,6 +180,12 @@ app.use(
 app.use(
   '/api/admin',
   adminRoutes
+);
+
+// COURSE REVIEWS
+app.use(
+  '/api/reviews',
+  reviewRoutes
 );
 
 // =====================================================

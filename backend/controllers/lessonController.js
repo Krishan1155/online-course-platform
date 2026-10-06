@@ -58,8 +58,6 @@ export const createLesson = asyncHandler(async (req, res) => {
     documentText,
     videoUrl,
     documentUrl,
-    codingQuestion,
-    starterCode,
     duration,
     order,
   } = req.body;
@@ -132,16 +130,6 @@ export const createLesson = asyncHandler(async (req, res) => {
     }
   }
 
-  // -----------------------------------------------------
-  // CODING
-  // -----------------------------------------------------
-
-  if (selectedContentType === 'coding') {
-    if (!codingQuestion || !codingQuestion.trim()) {
-      res.status(400);
-      throw new Error('Coding question is required');
-    }
-  }
 
   // -----------------------------------------------------
   // Get lesson count
@@ -185,10 +173,6 @@ export const createLesson = asyncHandler(async (req, res) => {
     documentUrl: finalDocumentUrl,
 
     documentText: documentText || '',
-
-    codingQuestion: codingQuestion || '',
-
-    starterCode: starterCode || '',
 
     duration:
       duration !== undefined
@@ -236,8 +220,6 @@ export const updateLesson = asyncHandler(async (req, res) => {
     documentText,
     videoUrl,
     documentUrl,
-    codingQuestion,
-    starterCode,
     duration,
     order,
   } = req.body;
@@ -257,11 +239,6 @@ export const updateLesson = asyncHandler(async (req, res) => {
   lesson.videoUrl =
     videoUrl ?? lesson.videoUrl;
 
-  lesson.codingQuestion =
-    codingQuestion ?? lesson.codingQuestion;
-
-  lesson.starterCode =
-    starterCode ?? lesson.starterCode;
 
   // -----------------------------------------------------
   // Document fields
@@ -346,15 +323,6 @@ export const updateLesson = asyncHandler(async (req, res) => {
     }
   }
 
-  if (
-    lesson.contentType === 'coding' &&
-    !lesson.codingQuestion
-  ) {
-    res.status(400);
-    throw new Error(
-      'Coding question is required'
-    );
-  }
 
   // -----------------------------------------------------
   // Save
