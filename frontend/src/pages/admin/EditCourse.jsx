@@ -683,7 +683,7 @@ const EditCourse = () => {
 
         lessonForm.contentType ===
 
-          'video' &&
+        'video' &&
 
         !lessonForm.videoUrl?.trim()
 
@@ -725,7 +725,7 @@ const EditCourse = () => {
 
           lessonForm.documentType ===
 
-            'pdf' &&
+          'pdf' &&
 
           !lessonForm.documentFile
 
@@ -751,7 +751,7 @@ const EditCourse = () => {
 
           lessonForm.documentType ===
 
-            'url' &&
+          'url' &&
 
           !lessonForm.documentUrl?.trim()
 
@@ -777,7 +777,7 @@ const EditCourse = () => {
 
           lessonForm.documentType ===
 
-            'text' &&
+          'text' &&
 
           !lessonForm.documentText?.trim()
 
@@ -813,7 +813,7 @@ const EditCourse = () => {
 
         lessonForm.contentType ===
 
-          'coding' &&
+        'coding' &&
 
         !lessonForm.codingQuestion?.trim()
 
@@ -889,7 +889,7 @@ const EditCourse = () => {
 
           lessonForm.description ||
 
-            ''
+          ''
 
         );
 
@@ -1075,14 +1075,11 @@ const EditCourse = () => {
 
             lessonForm.starterCode ||
 
-              ''
+            ''
 
           );
 
         }
-
-
-
 
 
         // ---------------------------------------------
@@ -1123,23 +1120,23 @@ const EditCourse = () => {
 
               ? {
 
-                  ...m,
+                ...m,
 
 
 
-                  lessons: [
+                lessons: [
 
-                    ...(m.lessons ||
+                  ...(m.lessons ||
 
-                      []),
+                    []),
 
 
 
-                    data.data,
+                  data.data,
 
-                  ],
+                ],
 
-                }
+              }
 
               : m
 
@@ -1190,9 +1187,6 @@ const EditCourse = () => {
       }
 
     };
-
-
-
 
 
   // ===================================================
@@ -1247,29 +1241,29 @@ const EditCourse = () => {
 
               ? {
 
-                  ...m,
+                ...m,
 
 
 
-                  lessons:
+                lessons:
 
-                    (
+                  (
 
-                      m.lessons ||
+                    m.lessons ||
 
-                      []
+                    []
 
-                    ).filter(
+                  ).filter(
 
-                      (lesson) =>
+                    (lesson) =>
 
-                        lesson._id !==
+                      lesson._id !==
 
-                        lessonId
+                      lessonId
 
-                    ),
+                  ),
 
-                }
+              }
 
               : m
 
@@ -1292,8 +1286,6 @@ const EditCourse = () => {
       }
 
     };
-
-
 
 
 
@@ -1412,11 +1404,11 @@ const EditCourse = () => {
         currentModules.map((module) =>
           module._id === editingLessonModuleId
             ? {
-                ...module,
-                lessons: (module.lessons || []).map((lesson) =>
-                  lesson._id === editingLessonId ? data.data : lesson
-                ),
-              }
+              ...module,
+              lessons: (module.lessons || []).map((lesson) =>
+                lesson._id === editingLessonId ? data.data : lesson
+              ),
+            }
             : module
         )
       );
@@ -1972,7 +1964,7 @@ const EditCourse = () => {
 
                     e.target.files[0] ||
 
-                      null
+                    null
 
                   )
 
@@ -2180,7 +2172,7 @@ const EditCourse = () => {
 
                 lessonForms[
 
-                  module._id
+                module._id
 
                 ] || {
 
@@ -2551,109 +2543,109 @@ const EditCourse = () => {
 
                       'video' && (
 
-                      <>
+                        <>
 
-                        <div>
-
-
-
-                          <label className="mb-1 block text-sm font-medium">
-
-                            Video URL
-
-                          </label>
+                          <div>
 
 
 
-                          <input
+                            <label className="mb-1 block text-sm font-medium">
 
-                            className="input-field"
+                              Video URL
 
-                            placeholder="YouTube or direct video URL"
-
-                            value={
-
-                              lessonForm.videoUrl
-
-                            }
-
-                            onChange={(e) =>
-
-                              updateLessonForm(
-
-                                module._id,
-
-                                'videoUrl',
-
-                                e.target.value
-
-                              )
-
-                            }
-
-                          />
+                            </label>
 
 
 
-                        </div>
+                            <input
 
+                              className="input-field"
 
+                              placeholder="YouTube or direct video URL"
 
+                              value={
 
+                                lessonForm.videoUrl
 
-                        <div>
+                              }
 
+                              onChange={(e) =>
 
+                                updateLessonForm(
 
-                          <label className="mb-1 block text-sm font-medium">
+                                  module._id,
 
-                            Duration (minutes)
-
-                          </label>
-
-
-
-                          <input
-
-                            type="number"
-
-                            min="0"
-
-                            className="input-field"
-
-                            value={
-
-                              lessonForm.duration
-
-                            }
-
-                            onChange={(e) =>
-
-                              updateLessonForm(
-
-                                module._id,
-
-                                'duration',
-
-                                Number(
+                                  'videoUrl',
 
                                   e.target.value
 
                                 )
 
-                              )
+                              }
 
-                            }
-
-                          />
+                            />
 
 
 
-                        </div>
+                          </div>
 
-                      </>
 
-                    )}
+
+
+
+                          <div>
+
+
+
+                            <label className="mb-1 block text-sm font-medium">
+
+                              Duration (minutes)
+
+                            </label>
+
+
+
+                            <input
+
+                              type="number"
+
+                              min="0"
+
+                              className="input-field"
+
+                              value={
+
+                                lessonForm.duration
+
+                              }
+
+                              onChange={(e) =>
+
+                                updateLessonForm(
+
+                                  module._id,
+
+                                  'duration',
+
+                                  Number(
+
+                                    e.target.value
+
+                                  )
+
+                                )
+
+                              }
+
+                            />
+
+
+
+                          </div>
+
+                        </>
+
+                      )}
 
 
 
@@ -2671,99 +2663,15 @@ const EditCourse = () => {
 
                       'document' && (
 
-                      <>
+                        <>
 
 
 
 
 
-                        {/* DOCUMENT TYPE */}
+                          {/* DOCUMENT TYPE */}
 
 
-
-                        <div>
-
-
-
-                          <label className="mb-1 block text-sm font-medium">
-
-                            Document Type
-
-                          </label>
-
-
-
-                          <select
-
-                            className="input-field"
-
-                            value={
-
-                              lessonForm.documentType ||
-
-                              'pdf'
-
-                            }
-
-                            onChange={(e) =>
-
-                              updateLessonForm(
-
-                                module._id,
-
-                                'documentType',
-
-                                e.target.value
-
-                              )
-
-                            }
-
-                          >
-
-
-
-                            <option value="pdf">
-
-                              📕 PDF
-
-                            </option>
-
-
-
-                            <option value="url">
-
-                              🔗 Web URL
-
-                            </option>
-
-
-
-                            <option value="text">
-
-                              📝 Text Content
-
-                            </option>
-
-
-
-                          </select>
-
-
-
-                        </div>
-
-
-
-
-
-                        {/* PDF */}
-
-
-
-                        {lessonForm.documentType ===
-
-                          'pdf' && (
 
                           <div>
 
@@ -2771,7 +2679,297 @@ const EditCourse = () => {
 
                             <label className="mb-1 block text-sm font-medium">
 
-                              Upload PDF Document
+                              Document Type
+
+                            </label>
+
+
+
+                            <select
+
+                              className="input-field"
+
+                              value={
+
+                                lessonForm.documentType ||
+
+                                'pdf'
+
+                              }
+
+                              onChange={(e) =>
+
+                                updateLessonForm(
+
+                                  module._id,
+
+                                  'documentType',
+
+                                  e.target.value
+
+                                )
+
+                              }
+
+                            >
+
+
+
+                              <option value="pdf">
+
+                                📕 PDF
+
+                              </option>
+
+
+
+                              <option value="url">
+
+                                🔗 Web URL
+
+                              </option>
+
+
+
+                              <option value="text">
+
+                                📝 Text Content
+
+                              </option>
+
+
+
+                            </select>
+
+
+
+                          </div>
+
+
+
+
+
+                          {/* PDF */}
+
+
+
+                          {lessonForm.documentType ===
+
+                            'pdf' && (
+
+                              <div>
+
+
+
+                                <label className="mb-1 block text-sm font-medium">
+
+                                  Upload PDF Document
+
+                                </label>
+
+
+
+                                <input
+
+                                  type="file"
+
+                                  accept="application/pdf,.pdf"
+
+                                  className="input-field"
+
+                                  onChange={(e) =>
+
+                                    updateLessonForm(
+
+                                      module._id,
+
+                                      'documentFile',
+
+                                      e.target.files[0] ||
+
+                                      null
+
+                                    )
+
+                                  }
+
+                                />
+
+
+
+                                <p className="mt-1 text-xs text-gray-500">
+
+                                  PDF only. Maximum size:
+
+                                  20 MB.
+
+                                </p>
+
+
+
+                              </div>
+
+                            )}
+
+
+
+
+
+                          {/* WEB URL */}
+
+
+
+                          {lessonForm.documentType ===
+
+                            'url' && (
+
+                              <div>
+
+
+
+                                <label className="mb-1 block text-sm font-medium">
+
+                                  Documentation URL
+
+                                </label>
+
+
+
+                                <input
+
+                                  type="url"
+
+                                  className="input-field"
+
+                                  placeholder="https\://react.dev/learn"
+
+                                  value={
+
+                                    lessonForm.documentUrl ||
+
+                                    ''
+
+                                  }
+
+                                  onChange={(e) =>
+
+                                    updateLessonForm(
+
+                                      module._id,
+
+                                      'documentUrl',
+
+                                      e.target.value
+
+                                    )
+
+                                  }
+
+                                />
+
+
+
+                                <p className="mt-1 text-xs text-gray-500">
+
+                                  Student will open this
+
+                                  webpage.
+
+                                </p>
+
+
+
+                              </div>
+
+                            )}
+
+
+
+
+
+                          {/* TEXT */}
+
+
+
+                          {lessonForm.documentType ===
+
+                            'text' && (
+
+                              <div>
+
+
+
+                                <label className="mb-1 block text-sm font-medium">
+
+                                  Document Content
+
+                                </label>
+
+
+
+                                <textarea
+
+                                  rows={12}
+
+                                  className="input-field"
+
+                                  placeholder="Write or paste your lesson content here..."
+
+                                  value={
+
+                                    lessonForm.documentText ||
+
+                                    ''
+
+                                  }
+
+                                  onChange={(e) =>
+
+                                    updateLessonForm(
+
+                                      module._id,
+
+                                      'documentText',
+
+                                      e.target.value
+
+                                    )
+
+                                  }
+
+                                />
+
+
+
+                                <p className="mt-1 text-xs text-gray-500">
+
+                                  This content will be shown
+
+                                  directly to students.
+
+                                </p>
+
+
+
+                              </div>
+
+                            )}
+
+
+
+
+
+                          {/* DOCUMENT DURATION */}
+
+
+
+                          <div>
+
+
+
+                            <label className="mb-1 block text-sm font-medium">
+
+                              Estimated Duration (minutes)
 
                             </label>
 
@@ -2779,83 +2977,15 @@ const EditCourse = () => {
 
                             <input
 
-                              type="file"
+                              type="number"
 
-                              accept="application/pdf,.pdf"
-
-                              className="input-field"
-
-                              onChange={(e) =>
-
-                                updateLessonForm(
-
-                                  module._id,
-
-                                  'documentFile',
-
-                                  e.target.files[0] ||
-
-                                    null
-
-                                )
-
-                              }
-
-                            />
-
-
-
-                            <p className="mt-1 text-xs text-gray-500">
-
-                              PDF only. Maximum size:
-
-                              20 MB.
-
-                            </p>
-
-
-
-                          </div>
-
-                        )}
-
-
-
-
-
-                        {/* WEB URL */}
-
-
-
-                        {lessonForm.documentType ===
-
-                          'url' && (
-
-                          <div>
-
-
-
-                            <label className="mb-1 block text-sm font-medium">
-
-                              Documentation URL
-
-                            </label>
-
-
-
-                            <input
-
-                              type="url"
+                              min="0"
 
                               className="input-field"
-
-                              placeholder="https\://react.dev/learn"
 
                               value={
 
-                                lessonForm.documentUrl ||
-
-                                ''
+                                lessonForm.duration
 
                               }
 
@@ -2865,81 +2995,13 @@ const EditCourse = () => {
 
                                   module._id,
 
-                                  'documentUrl',
+                                  'duration',
 
-                                  e.target.value
+                                  Number(
 
-                                )
+                                    e.target.value
 
-                              }
-
-                            />
-
-
-
-                            <p className="mt-1 text-xs text-gray-500">
-
-                              Student will open this
-
-                              webpage.
-
-                            </p>
-
-
-
-                          </div>
-
-                        )}
-
-
-
-
-
-                        {/* TEXT */}
-
-
-
-                        {lessonForm.documentType ===
-
-                          'text' && (
-
-                          <div>
-
-
-
-                            <label className="mb-1 block text-sm font-medium">
-
-                              Document Content
-
-                            </label>
-
-
-
-                            <textarea
-
-                              rows={12}
-
-                              className="input-field"
-
-                              placeholder="Write or paste your lesson content here..."
-
-                              value={
-
-                                lessonForm.documentText ||
-
-                                ''
-
-                              }
-
-                              onChange={(e) =>
-
-                                updateLessonForm(
-
-                                  module._id,
-
-                                  'documentText',
-
-                                  e.target.value
+                                  )
 
                                 )
 
@@ -2949,83 +3011,13 @@ const EditCourse = () => {
 
 
 
-                            <p className="mt-1 text-xs text-gray-500">
-
-                              This content will be shown
-
-                              directly to students.
-
-                            </p>
-
-
-
                           </div>
 
-                        )}
 
 
+                        </>
 
-
-
-                        {/* DOCUMENT DURATION */}
-
-
-
-                        <div>
-
-
-
-                          <label className="mb-1 block text-sm font-medium">
-
-                            Estimated Duration (minutes)
-
-                          </label>
-
-
-
-                          <input
-
-                            type="number"
-
-                            min="0"
-
-                            className="input-field"
-
-                            value={
-
-                              lessonForm.duration
-
-                            }
-
-                            onChange={(e) =>
-
-                              updateLessonForm(
-
-                                module._id,
-
-                                'duration',
-
-                                Number(
-
-                                  e.target.value
-
-                                )
-
-                              )
-
-                            }
-
-                          />
-
-
-
-                        </div>
-
-
-
-                      </>
-
-                    )}
+                      )}
 
 
 
@@ -3043,165 +3035,165 @@ const EditCourse = () => {
 
                       'coding' && (
 
-                      <>
+                        <>
 
 
 
-                        <div>
+                          <div>
 
 
 
-                          <label className="mb-1 block text-sm font-medium">
+                            <label className="mb-1 block text-sm font-medium">
 
-                            Coding Question
+                              Coding Question
 
-                          </label>
+                            </label>
 
 
 
-                          <textarea
+                            <textarea
 
-                            rows={6}
+                              rows={6}
 
-                            className="input-field"
+                              className="input-field"
 
-                            placeholder="Write the coding problem..."
+                              placeholder="Write the coding problem..."
 
-                            value={
+                              value={
 
-                              lessonForm.codingQuestion
+                                lessonForm.codingQuestion
 
-                            }
+                              }
 
-                            onChange={(e) =>
+                              onChange={(e) =>
 
-                              updateLessonForm(
+                                updateLessonForm(
 
-                                module._id,
+                                  module._id,
 
-                                'codingQuestion',
-
-                                e.target.value
-
-                              )
-
-                            }
-
-                          />
-
-
-
-                        </div>
-
-
-
-
-
-                        <div>
-
-
-
-                          <label className="mb-1 block text-sm font-medium">
-
-                            Starter Code
-
-                          </label>
-
-
-
-                          <textarea
-
-                            rows={8}
-
-                            className="input-field font-mono"
-
-                            placeholder="Write starter code..."
-
-                            value={
-
-                              lessonForm.starterCode
-
-                            }
-
-                            onChange={(e) =>
-
-                              updateLessonForm(
-
-                                module._id,
-
-                                'starterCode',
-
-                                e.target.value
-
-                              )
-
-                            }
-
-                          />
-
-
-
-                        </div>
-
-
-
-
-
-                        <div>
-
-
-
-                          <label className="mb-1 block text-sm font-medium">
-
-                            Estimated Duration (minutes)
-
-                          </label>
-
-
-
-                          <input
-
-                            type="number"
-
-                            min="0"
-
-                            className="input-field"
-
-                            value={
-
-                              lessonForm.duration
-
-                            }
-
-                            onChange={(e) =>
-
-                              updateLessonForm(
-
-                                module._id,
-
-                                'duration',
-
-                                Number(
+                                  'codingQuestion',
 
                                   e.target.value
 
                                 )
 
-                              )
+                              }
 
-                            }
-
-                          />
+                            />
 
 
 
-                        </div>
+                          </div>
 
 
 
-                      </>
 
-                    )}
+
+                          <div>
+
+
+
+                            <label className="mb-1 block text-sm font-medium">
+
+                              Starter Code
+
+                            </label>
+
+
+
+                            <textarea
+
+                              rows={8}
+
+                              className="input-field font-mono"
+
+                              placeholder="Write starter code..."
+
+                              value={
+
+                                lessonForm.starterCode
+
+                              }
+
+                              onChange={(e) =>
+
+                                updateLessonForm(
+
+                                  module._id,
+
+                                  'starterCode',
+
+                                  e.target.value
+
+                                )
+
+                              }
+
+                            />
+
+
+
+                          </div>
+
+
+
+
+
+                          <div>
+
+
+
+                            <label className="mb-1 block text-sm font-medium">
+
+                              Estimated Duration (minutes)
+
+                            </label>
+
+
+
+                            <input
+
+                              type="number"
+
+                              min="0"
+
+                              className="input-field"
+
+                              value={
+
+                                lessonForm.duration
+
+                              }
+
+                              onChange={(e) =>
+
+                                updateLessonForm(
+
+                                  module._id,
+
+                                  'duration',
+
+                                  Number(
+
+                                    e.target.value
+
+                                  )
+
+                                )
+
+                              }
+
+                            />
+
+
+
+                          </div>
+
+
+
+                        </>
+
+                      )}
 
 
 
