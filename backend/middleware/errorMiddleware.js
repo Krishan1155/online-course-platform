@@ -13,7 +13,7 @@ const errorHandler = (err, req, res, next) => {
     message = 'Resource not found';
   }
 
-  if (err.code === 11000) {
+  if (err.code === 11000) {   //Handle duplicate data
     statusCode = 400;
     const field = Object.keys(err.keyValue)[0];
     message = `${field} already exists`;
