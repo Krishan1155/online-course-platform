@@ -2453,22 +2453,6 @@ const CourseDetail = () => {
 
               </li>
 
-
-
-              <li>
-
-                ✓ Certificate on completion
-
-              </li>
-
-
-
-              <li>
-
-                ✓ Mobile friendly
-
-              </li>
-
             </ul>
 
           </div>

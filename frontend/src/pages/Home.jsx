@@ -31,7 +31,7 @@ const Home = () => {
               Learn new skills online with expert instructors
             </h1>
             <p className="mb-8 text-lg text-primary-100">
-              Browse hundreds of courses, enroll instantly, and track your progress — all in one place.
+              Browse courses, learn at your own pace, and track your learning progress — all in one place.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link to="/courses" className="rounded-lg bg-white px-6 py-3 font-semibold text-primary-700 hover:bg-primary-50">
