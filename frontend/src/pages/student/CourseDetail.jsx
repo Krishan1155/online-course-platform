@@ -616,7 +616,7 @@ const CourseDetail = () => {
 
                 .description ||
 
-                'Payment failed'
+              'Payment failed'
 
             );
 
@@ -1030,13 +1030,13 @@ const CourseDetail = () => {
 
       diff /
 
-        (1000 *
+      (1000 *
 
-          60 *
+        60 *
 
-          60 *
+        60 *
 
-          24)
+        24)
 
     );
 
@@ -1308,7 +1308,7 @@ const CourseDetail = () => {
 
       (count / ratingCount) *
 
-        100
+      100
 
     );
 
@@ -1533,7 +1533,7 @@ const CourseDetail = () => {
 
                     {ratingCount ===
 
-                    1
+                      1
 
                       ? 'rating'
 
@@ -1933,7 +1933,7 @@ const CourseDetail = () => {
 
                                 star <=
 
-                                rating
+                                  rating
 
                                   ? 'text-amber-500'
 
@@ -2027,9 +2027,9 @@ const CourseDetail = () => {
 
                         : userReview
 
-                        ? 'Update Review'
+                          ? 'Update Review'
 
-                        : 'Submit Review'}
+                          : 'Submit Review'}
 
                     </button>
 
@@ -2227,15 +2227,13 @@ const CourseDetail = () => {
 
                               }
 
-                              className={`rounded-full border px-3 py-1.5 text-sm transition ${
+                              className={`rounded-full border px-3 py-1.5 text-sm transition ${review.isHelpful
 
-                                review.isHelpful
+                                ? 'border-primary-600 bg-primary-50 text-primary-600'
 
-                                  ? 'border-primary-600 bg-primary-50 text-primary-600'
+                                : 'border-gray-300 text-gray-600 hover:border-primary-500'
 
-                                  : 'border-gray-300 text-gray-600 hover:border-primary-500'
-
-                              }`}
+                                }`}
 
                             >
 
@@ -2265,15 +2263,13 @@ const CourseDetail = () => {
 
                               }
 
-                              className={`rounded-full border px-3 py-1.5 text-sm transition ${
+                              className={`rounded-full border px-3 py-1.5 text-sm transition ${review.isNotHelpful
 
-                                review.isNotHelpful
+                                ? 'border-red-500 bg-red-50 text-red-500'
 
-                                  ? 'border-red-500 bg-red-50 text-red-500'
+                                : 'border-gray-300 text-gray-600 hover:border-red-400'
 
-                                  : 'border-gray-300 text-gray-600 hover:border-red-400'
-
-                              }`}
+                                }`}
 
                             >
 
@@ -2327,9 +2323,9 @@ const CourseDetail = () => {
 
                 : formatPrice(
 
-                    course.price
+                  course.price
 
-                  )}
+                )}
 
             </div>
 
