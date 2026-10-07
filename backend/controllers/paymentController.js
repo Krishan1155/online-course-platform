@@ -186,6 +186,15 @@ export const getRevenueStats = asyncHandler(async (req, res) => {
     { $limit: 12 },
   ]);
 
+  //  Get latest 10 payments
+  const recentPayments = await Payment.find({
+    status: 'paid'
+  })
+    .populate('user', 'name email')
+    .populate('course', 'title')
+    .sort({ createdAt: -1 })
+    .limit(10);
+
   res.json({
     success: true,
     data: {
@@ -195,7 +204,7 @@ export const getRevenueStats = asyncHandler(async (req, res) => {
       totalUsers: users,
       totalCourses: courses,
       monthlyRevenue,
-      recentPayments: paidPayments.slice(0, 10),
+      recentPayments
     },
   });
 });
