@@ -147,7 +147,7 @@ const CourseDetail = () => {
           );
 
 
-
+console.log(data.data);
         setCourse(data.data);
 
       } catch (err) {

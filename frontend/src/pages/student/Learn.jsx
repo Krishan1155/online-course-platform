@@ -617,11 +617,11 @@ const Learn = () => {
                       </p>
                     )}
 
-                    {activeLesson.duration > 0 && (
+                    {/* {activeLesson.duration > 0 && (
                       <p className="text-sm text-gray-500">
                         {activeLesson.duration} min
                       </p>
-                    )}
+                    )} */}
                   </div>
 
                   {completed && (

@@ -17,7 +17,7 @@ export const formatDuration = (minutes) => {
 export const getImageUrl = (path) => {
   if (!path) return 'https://placehold.co/600x400/indigo/white?text=Course';
   if (path.startsWith('http')) return path;
-  const base = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+  const base = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001';
   return `${base}${path}`;
 };
 
