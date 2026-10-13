@@ -25,18 +25,51 @@ export const getUserById = asyncHandler(async (req, res) => {
   });
 });
 
+
 export const updateUserRole = asyncHandler(async (req, res) => {
+  const { role } = req.body;
+
+  // Accept only supported roles.
+  if (!['student', 'admin'].includes(role)) {
+    res.status(400);
+    throw new Error('Invalid role. Role must be student or admin.');
+  }
+
   const user = await User.findById(req.params.id);
+
   if (!user) {
     res.status(404);
     throw new Error('User not found');
   }
 
-  user.role = req.body.role;
+  // Prevent the logged-in admin from changing their own role.
+  if (user._id.toString() === req.user._id.toString()) {
+    res.status(400);
+    throw new Error('You cannot change your own role.');
+  }
+
+  if (user.role === role) {
+    const safeUser = user.toObject();
+    delete safeUser.password;
+
+    return res.json({
+      success: true,
+      data: safeUser,
+    });
+  }
+
+  user.role = role;
   await user.save();
 
-  res.json({ success: true, data: user });
+  const safeUser = user.toObject();
+  delete safeUser.password;
+
+  res.json({
+    success: true,
+    data: safeUser,
+  });
 });
+
 
 export const deleteUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
