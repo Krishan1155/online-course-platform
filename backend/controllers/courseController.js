@@ -24,83 +24,106 @@ const updateCourseStats = async (courseId) => {
   );
 };
 
-export const getCourses = asyncHandler(
-  async (req, res) => {
-    const {
-      search,
-      category,
-      level,
-      minPrice,
-      maxPrice,
-      sort,
-    } = req.query;
 
-    const filter = {
-      isPublished: true,
+export const getCourses = asyncHandler(async (req, res) => {
+  const {
+    search,
+    category,
+    level,
+    minPrice,
+    maxPrice,
+    sort,
+  } = req.query;
+
+  const filter = {
+    isPublished: true,
+  };
+
+  // Escape special regex characters entered by the user.
+  const searchText = search?.trim();
+
+  const escapeRegex = (value) =>
+    value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  if (searchText) {
+    const searchRegex = new RegExp(
+      escapeRegex(searchText),
+      'i'
+    );
+
+    // Match partial text in multiple fields.
+    filter.$or = [
+      { title: searchRegex },
+      { description: searchRegex },
+      { category: searchRegex },
+      { instructor: searchRegex },
+    ];
+  }
+
+  if (category) {
+    filter.category = category;
+  }
+
+  if (level) {
+    filter.level = level;
+  }
+
+  if (minPrice !== undefined && minPrice !== '') {
+    filter.price = {
+      ...filter.price,
+      $gte: Number(minPrice),
     };
+  }
 
-    if (search) {
-      filter.$text = {
-        $search: search,
-      };
-    }
-
-    if (category) {
-      filter.category = category;
-    }
-
-    if (level) {
-      filter.level = level;
-    }
-
-    if (minPrice || maxPrice) {
-      filter.price = {};
-
-      if (minPrice) {
-        filter.price.$gte = Number(minPrice);
-      }
-
-      if (maxPrice) {
-        filter.price.$lte = Number(maxPrice);
-      }
-    }
-
-    let sortOption = {
-      createdAt: -1,
+  if (maxPrice !== undefined && maxPrice !== '') {
+    filter.price = {
+      ...filter.price,
+      $lte: Number(maxPrice),
     };
+  }
 
-    if (sort === 'price-asc') {
-      sortOption = {
-        price: 1,
+  let sortOption = { createdAt: -1 };
+
+  if (sort === 'price-asc') {
+    sortOption = { price: 1, title: 1 };
+  } else if (sort === 'price-desc') {
+    sortOption = { price: -1, title: 1 };
+  } else if (sort === 'title') {
+    sortOption = { title: 1 };
+  }
+
+  const courses = await Course.find(filter)
+    .sort(sortOption)
+    .populate('createdBy', 'name');
+
+  let result = courses;
+
+  if (searchText) {
+    const query = searchText.toLowerCase();
+
+    // Prioritize title matches over matches in other fields.
+    result = [...courses].sort((a, b) => {
+      const getRank = (course) => {
+        const title = (course.title || '').toLowerCase();
+
+        if (title === query) return 0;
+        if (title.startsWith(query)) return 1;
+        if (title.includes(query)) return 2;
+
+        return 3;
       };
-    }
 
-    if (sort === 'price-desc') {
-      sortOption = {
-        price: -1,
-      };
-    }
-
-    if (sort === 'title') {
-      sortOption = {
-        title: 1,
-      };
-    }
-
-    const courses = await Course.find(filter)
-      .sort(sortOption)
-      .populate(
-        'createdBy',
-        'name'
-      );
-
-    res.json({
-      success: true,
-      count: courses.length,
-      data: courses,
+      return getRank(a) - getRank(b);
     });
   }
-);
+
+  res.json({
+    success: true,
+    count: result.length,
+    data: result,
+  });
+});
+
 
 export const getCourseById = asyncHandler(
   async (req, res) => {
