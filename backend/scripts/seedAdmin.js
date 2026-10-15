@@ -21,13 +21,13 @@ const seedAdmin = async () => {
       });
       console.log(`Admin user created: ${adminEmail}`);
     } 
-    else 
-    {
-      adminExists.role= 'admin';
-      adminExists.isVerified=true;
-      await adminExists.save();
-      console.log('Admin role ensured for: ${adminEmail}');
-    }
+  else {
+  adminExists.role = 'admin';
+  adminExists.isVerified = true;
+  await adminExists.save();
+
+  console.log(`Admin role ensured for: ${adminEmail}`);
+}
 
     process.exit(0);
   } catch (error) {

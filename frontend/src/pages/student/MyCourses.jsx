@@ -12,7 +12,13 @@ const MyCourses = () => {
     const fetchEnrollments = async () => {
       try {
         const { data } = await api.get('/enrollments/my');
-        setEnrollments(data.data);
+        setEnrollments(
+  [...data.data].sort(
+    (a, b) =>
+      (a.progress?.progressPercentage ?? 0) -
+      (b.progress?.progressPercentage ?? 0)
+  )
+);
       } catch (error) {
         console.error(error.message);
       } finally {
@@ -81,7 +87,7 @@ const MyCourses = () => {
 </div>
 
                   <div className="mb-4 text-xs text-gray-500">
-                    {course.totalLessons || 0} lessons · {formatDuration(course.totalDuration)}
+                    {course.totalLessons || 0} lessons · {formatDuration(course.totalDuration)} 
                   </div>
 
                  <Link

@@ -1,3 +1,4 @@
+
 import mongoose from 'mongoose';
 
 const lessonSchema = new mongoose.Schema(
@@ -16,7 +17,7 @@ const lessonSchema = new mongoose.Schema(
 
     title: {
       type: String,
-      required: [true, 'Lesson title is required'],
+      required: true,
       trim: true,
     },
 
@@ -25,50 +26,45 @@ const lessonSchema = new mongoose.Schema(
       default: '',
     },
 
-    // video / document 
     contentType: {
       type: String,
       enum: ['video', 'document'],
       default: 'video',
     },
 
-    // =====================================================
-    // VIDEO
-    // =====================================================
 
-    videoUrl: {
+    // S3 object key for newly uploaded videos.
+    videoKey: {
       type: String,
       default: '',
     },
 
-    // =====================================================
-    // DOCUMENT
-    // =====================================================
+    
+documentType: {
+  type: String,
+  enum: ['', 'pdf', 'url', 'text'],
+  default: '',
+},
 
-    // pdf / url / text
-    documentType: {
-      type: String,
-      enum: ['pdf', 'url', 'text'],
-      default: 'pdf',
-    },
 
-    // PDF path or external documentation URL
+    // Retained for existing local PDFs and external document URLs.
     documentUrl: {
       type: String,
       default: '',
     },
 
-    // Direct text/notes content
+    // S3 object key for newly uploaded PDFs.
+    documentKey: {
+      type: String,
+      default: '',
+    },
+
     documentText: {
       type: String,
       default: '',
     },
 
-
-    // =====================================================
-    // COMMON
-    // =====================================================
-
+    // Duration remains in minutes for course statistics.
     duration: {
       type: Number,
       default: 0,

@@ -3,6 +3,7 @@ import Module from '../models/Module.js';
 import Course from '../models/Course.js';
 import Lesson from '../models/Lesson.js';
 import { updateCourseStats } from './courseController.js';
+import { deleteFromS3 } from '../utils/s3.js';
 
 export const createModule = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
@@ -39,6 +40,7 @@ export const updateModule = asyncHandler(async (req, res) => {
   res.json({ success: true, data: module });
 });
 
+
 export const deleteModule = asyncHandler(async (req, res) => {
   const module = await Module.findById(req.params.id);
 
@@ -47,12 +49,44 @@ export const deleteModule = asyncHandler(async (req, res) => {
     throw new Error('Module not found');
   }
 
+  const courseId = module.course;
+
+  // Find all lessons in this module
+  const lessons = await Lesson.find({
+    module: module._id,
+  }).select('videoKey documentKey');
+
+  // Collect video and document keys stored in S3
+  const s3Keys = [
+    ...new Set(
+      lessons
+        .flatMap((lesson) => [
+          lesson.videoKey,
+          lesson.documentKey,
+        ])
+        .filter(Boolean)
+    ),
+  ];
+
+  // Delete S3 objects first
+  for (const key of s3Keys) {
+    await deleteFromS3(key);
+  }
+
+  // Delete lesson and module records
   await Lesson.deleteMany({ module: module._id });
   await module.deleteOne();
-  await updateCourseStats(module.course);
 
-  res.json({ success: true, message: 'Module deleted successfully' });
+  // Update course lesson count and duration
+  await updateCourseStats(courseId);
+
+  res.json({
+    success: true,
+    message:
+      'Module, lessons, and associated S3 files deleted successfully',
+  });
 });
+
 
 export const getModulesByCourse = asyncHandler(async (req, res) => {
   const modules = await Module.find({ course: req.params.courseId }).sort({ order: 1 });

@@ -29,7 +29,6 @@ export const getUserById = asyncHandler(async (req, res) => {
 export const updateUserRole = asyncHandler(async (req, res) => {
   const { role } = req.body;
 
-  // Accept only supported roles.
   if (!['student', 'admin'].includes(role)) {
     res.status(400);
     throw new Error('Invalid role. Role must be student or admin.');
@@ -42,20 +41,19 @@ export const updateUserRole = asyncHandler(async (req, res) => {
     throw new Error('User not found');
   }
 
-  // Prevent the logged-in admin from changing their own role.
+  // Prevent changing your own role.
   if (user._id.toString() === req.user._id.toString()) {
     res.status(400);
     throw new Error('You cannot change your own role.');
   }
 
-  if (user.role === role) {
-    const safeUser = user.toObject();
-    delete safeUser.password;
+  // Protect the default admin account.
+  const defaultAdminEmail =
+    (process.env.ADMIN_EMAIL || 'admin@courseplatform.com').toLowerCase();
 
-    return res.json({
-      success: true,
-      data: safeUser,
-    });
+  if (user.email.toLowerCase() === defaultAdminEmail) {
+    res.status(400);
+    throw new Error('The default admin role cannot be changed.');
   }
 
   user.role = role;
@@ -64,10 +62,7 @@ export const updateUserRole = asyncHandler(async (req, res) => {
   const safeUser = user.toObject();
   delete safeUser.password;
 
-  res.json({
-    success: true,
-    data: safeUser,
-  });
+  res.json({ success: true, data: safeUser });
 });
 
 

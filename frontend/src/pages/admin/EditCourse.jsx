@@ -2,23 +2,13 @@ import { useEffect, useState } from 'react';
 
 import { Link, useParams } from 'react-router-dom';
 
-
-
 import api from '../../api/axios';
-
-
 
 import Alert from '../../components/Alert';
 
 import LoadingSpinner from '../../components/LoadingSpinner';
 
-
-
 import { getImageUrl } from '../../utils/helpers';
-
-
-
-
 
 // =====================================================
 
@@ -26,21 +16,15 @@ import { getImageUrl } from '../../utils/helpers';
 
 // =====================================================
 
-
-
 const emptyLessonForm = {
 
   title: '',
 
-
-
   contentType: 'video',
-
-
 
   videoUrl: '',
 
-
+  videoFile: null,
 
   documentType: 'pdf',
 
@@ -50,22 +34,11 @@ const emptyLessonForm = {
 
   documentText: '',
 
-
-
-
-
-
   duration: 0,
-
-
 
   description: '',
 
 };
-
-
-
-
 
 // =====================================================
 
@@ -73,15 +46,9 @@ const emptyLessonForm = {
 
 // =====================================================
 
-
-
 const EditCourse = () => {
 
   const { id } = useParams();
-
-
-
-
 
   // ===================================================
 
@@ -89,15 +56,9 @@ const EditCourse = () => {
 
   // ===================================================
 
-
-
   const [course, setCourse] =
 
     useState(null);
-
-
-
-
 
   const [form, setForm] =
 
@@ -119,25 +80,15 @@ const EditCourse = () => {
 
     });
 
-
-
-
-
   // ===================================================
 
   // MODULES
 
   // ===================================================
 
-
-
   const [modules, setModules] =
 
     useState([]);
-
-
-
-
 
   const [moduleForm, setModuleForm] =
 
@@ -147,30 +98,23 @@ const EditCourse = () => {
 
     });
 
-
-
-
-
   // ===================================================
 
   // LESSON FORMS
 
   // ===================================================
 
-
-
   const [lessonForms, setLessonForms] =
 
     useState({});
 
   const [editingLessonId, setEditingLessonId] = useState(null);
+
   const [editingLessonModuleId, setEditingLessonModuleId] = useState(null);
+
   const [editLessonForm, setEditLessonForm] = useState({ ...emptyLessonForm });
+
   const [updatingLesson, setUpdatingLesson] = useState(false);
-
-
-
-
 
   // ===================================================
 
@@ -178,15 +122,9 @@ const EditCourse = () => {
 
   // ===================================================
 
-
-
   const [thumbnail, setThumbnail] =
 
     useState(null);
-
-
-
-
 
   // ===================================================
 
@@ -194,41 +132,27 @@ const EditCourse = () => {
 
   // ===================================================
 
-
-
   const [error, setError] =
 
     useState('');
-
-
 
   const [success, setSuccess] =
 
     useState('');
 
-
-
   const [loading, setLoading] =
 
     useState(true);
 
-
-
   const [saving, setSaving] =
 
     useState(false);
-
-
-
-
 
   // ===================================================
 
   // GET COURSE
 
   // ===================================================
-
-
 
   const fetchCourse = async () => {
 
@@ -242,15 +166,9 @@ const EditCourse = () => {
 
         );
 
-
-
       const c = data.data;
 
-
-
       setCourse(c);
-
-
 
       setForm({
 
@@ -272,8 +190,6 @@ const EditCourse = () => {
 
       });
 
-
-
       setModules(
 
         c.modules || []
@@ -292,27 +208,17 @@ const EditCourse = () => {
 
   };
 
-
-
-
-
   useEffect(() => {
 
     fetchCourse();
 
   }, [id]);
 
-
-
-
-
   // ===================================================
 
   // COURSE FORM CHANGE
 
   // ===================================================
-
-
 
   const handleChange = (e) => {
 
@@ -328,13 +234,9 @@ const EditCourse = () => {
 
     } = e.target;
 
-
-
     setForm({
 
       ...form,
-
-
 
       [name]:
 
@@ -348,37 +250,25 @@ const EditCourse = () => {
 
   };
 
-
-
-
-
   // ===================================================
 
   // UPDATE COURSE
 
   // ===================================================
 
-
-
   const handleUpdateCourse = async (e) => {
 
     e.preventDefault();
 
-
-
     setSaving(true);
 
     setError('');
-
-
 
     try {
 
       const formData =
 
         new FormData();
-
-
 
       Object.entries(form).forEach(
 
@@ -396,8 +286,6 @@ const EditCourse = () => {
 
       );
 
-
-
       if (thumbnail) {
 
         formData.append(
@@ -409,8 +297,6 @@ const EditCourse = () => {
         );
 
       }
-
-
 
       await api.put(
 
@@ -432,15 +318,11 @@ const EditCourse = () => {
 
       );
 
-
-
       setSuccess(
 
         'Course updated successfully'
 
       );
-
-
 
       await fetchCourse();
 
@@ -456,27 +338,17 @@ const EditCourse = () => {
 
   };
 
-
-
-
-
   // ===================================================
 
   // ADD MODULE
 
   // ===================================================
 
-
-
   const handleAddModule = async (e) => {
 
     e.preventDefault();
 
-
-
     setError('');
-
-
 
     try {
 
@@ -489,8 +361,6 @@ const EditCourse = () => {
           moduleForm
 
         );
-
-
 
       setModules([
 
@@ -506,15 +376,11 @@ const EditCourse = () => {
 
       ]);
 
-
-
       setModuleForm({
 
         title: '',
 
       });
-
-
 
       setSuccess(
 
@@ -530,17 +396,11 @@ const EditCourse = () => {
 
   };
 
-
-
-
-
   // ===================================================
 
   // DELETE MODULE
 
   // ===================================================
-
-
 
   const handleDeleteModule =
 
@@ -560,8 +420,6 @@ const EditCourse = () => {
 
       }
 
-
-
       try {
 
         await api.delete(
@@ -569,8 +427,6 @@ const EditCourse = () => {
           `/modules/${moduleId}`
 
         );
-
-
 
         setModules(
 
@@ -583,8 +439,6 @@ const EditCourse = () => {
           )
 
         );
-
-
 
         setSuccess(
 
@@ -600,17 +454,11 @@ const EditCourse = () => {
 
     };
 
-
-
-
-
   // ===================================================
 
   // ADD LESSON / CONTENT
 
   // ===================================================
-
-
 
   const handleAddLesson =
 
@@ -620,17 +468,11 @@ const EditCourse = () => {
 
         lessonForms[moduleId];
 
-
-
-
-
       // -----------------------------------------------
 
       // Basic validation
 
       // -----------------------------------------------
-
-
 
       if (!lessonForm?.title?.trim()) {
 
@@ -640,15 +482,9 @@ const EditCourse = () => {
 
         );
 
-
-
         return;
 
       }
-
-
-
-
 
       if (!lessonForm?.contentType) {
 
@@ -658,15 +494,9 @@ const EditCourse = () => {
 
         );
 
-
-
         return;
 
       }
-
-
-
-
 
       // -----------------------------------------------
 
@@ -674,41 +504,25 @@ const EditCourse = () => {
 
       // -----------------------------------------------
 
-
-
       if (
 
-        lessonForm.contentType ===
+        lessonForm.contentType === 'video' &&
 
-        'video' &&
-
-        !lessonForm.videoUrl?.trim()
+        !lessonForm.videoFile
 
       ) {
 
-        setError(
-
-          'Video URL is required'
-
-        );
-
-
+        setError('Please select a video file to upload.');
 
         return;
 
       }
-
-
-
-
 
       // -----------------------------------------------
 
       // Document validation
 
       // -----------------------------------------------
-
-
 
       if (
 
@@ -734,15 +548,9 @@ const EditCourse = () => {
 
           );
 
-
-
           return;
 
         }
-
-
-
-
 
         if (
 
@@ -760,15 +568,9 @@ const EditCourse = () => {
 
           );
 
-
-
           return;
 
         }
-
-
-
-
 
         if (
 
@@ -786,32 +588,17 @@ const EditCourse = () => {
 
           );
 
-
-
           return;
 
         }
 
       }
 
-
-
-
-
       // -----------------------------------------------
-
-
-
-
-
 
       try {
 
         setError('');
-
-
-
-
 
         // ---------------------------------------------
 
@@ -819,15 +606,9 @@ const EditCourse = () => {
 
         // ---------------------------------------------
 
-
-
         const formData =
 
           new FormData();
-
-
-
-
 
         formData.append(
 
@@ -837,10 +618,6 @@ const EditCourse = () => {
 
         );
 
-
-
-
-
         formData.append(
 
           'contentType',
@@ -848,10 +625,6 @@ const EditCourse = () => {
           lessonForm.contentType
 
         );
-
-
-
-
 
         formData.append(
 
@@ -863,23 +636,9 @@ const EditCourse = () => {
 
         );
 
-
-
-
-
-        formData.append(
-
-          'duration',
-
-          lessonForm.duration || 0
-
-        );
-
-
-
-
-
-
+        if (lessonForm.contentType === 'document') {
+          formData.append('duration', lessonForm.duration || 0);
+        }
 
         // ---------------------------------------------
 
@@ -887,37 +646,19 @@ const EditCourse = () => {
 
         // ---------------------------------------------
 
+        if (lessonForm.contentType === 'video') {
 
-
-        if (
-
-          lessonForm.contentType ===
-
-          'video'
-
-        ) {
-
-          formData.append(
-
-            'videoUrl',
-
-            lessonForm.videoUrl
-
-          );
+          if (lessonForm.videoFile) {
+            formData.append('video', lessonForm.videoFile);
+          }
 
         }
-
-
-
-
 
         // ---------------------------------------------
 
         // DOCUMENT
 
         // ---------------------------------------------
-
-
 
         if (
 
@@ -934,10 +675,6 @@ const EditCourse = () => {
             lessonForm.documentType
 
           );
-
-
-
-
 
           // PDF
 
@@ -959,10 +696,6 @@ const EditCourse = () => {
 
           }
 
-
-
-
-
           // WEB URL
 
           if (
@@ -982,10 +715,6 @@ const EditCourse = () => {
             );
 
           }
-
-
-
-
 
           // TEXT
 
@@ -1009,21 +738,13 @@ const EditCourse = () => {
 
         }
 
-
-
-
-
         // ---------------------------------------------
-
-
 
         // ---------------------------------------------
 
         // API
 
         // ---------------------------------------------
-
-
 
         const { data } =
 
@@ -1035,17 +756,11 @@ const EditCourse = () => {
 
           );
 
-
-
-
-
         // ---------------------------------------------
 
         // Update UI
 
         // ---------------------------------------------
-
-
 
         setModules(
 
@@ -1057,15 +772,11 @@ const EditCourse = () => {
 
                 ...m,
 
-
-
                 lessons: [
 
                   ...(m.lessons ||
 
                     []),
-
-
 
                   data.data,
 
@@ -1079,23 +790,15 @@ const EditCourse = () => {
 
         );
 
-
-
-
-
         // ---------------------------------------------
 
         // Reset form
 
         // ---------------------------------------------
 
-
-
         setLessonForms({
 
           ...lessonForms,
-
-
 
           [moduleId]: {
 
@@ -1104,10 +807,6 @@ const EditCourse = () => {
           },
 
         });
-
-
-
-
 
         setSuccess(
 
@@ -1123,14 +822,11 @@ const EditCourse = () => {
 
     };
 
-
   // ===================================================
 
   // DELETE LESSON
 
   // ===================================================
-
-
 
   const handleDeleteLesson =
 
@@ -1156,8 +852,6 @@ const EditCourse = () => {
 
       }
 
-
-
       try {
 
         await api.delete(
@@ -1165,8 +859,6 @@ const EditCourse = () => {
           `/lessons/${lessonId}`
 
         );
-
-
 
         setModules(
 
@@ -1177,8 +869,6 @@ const EditCourse = () => {
               ? {
 
                 ...m,
-
-
 
                 lessons:
 
@@ -1206,8 +896,6 @@ const EditCourse = () => {
 
         );
 
-
-
         setSuccess(
 
           'Content deleted successfully'
@@ -1222,129 +910,226 @@ const EditCourse = () => {
 
     };
 
-
-
   // ===================================================
 
   // EDIT LESSON
 
   const handleStartEditLesson = (moduleId, lesson) => {
+
     setEditingLessonId(lesson._id);
+
     setEditingLessonModuleId(moduleId);
+
     setEditLessonForm({
+
       title: lesson.title || '',
+
       contentType: lesson.contentType || 'video',
+
       videoUrl: lesson.videoUrl || '',
+
+      videoKey: lesson.videoKey || '',
+
+      videoFile: null,
+
       documentType: lesson.documentType || 'pdf',
+
       documentUrl: lesson.documentUrl || '',
+
+      documentKey: lesson.documentKey || '',
+
       documentFile: null,
+
       documentText: lesson.documentText || '',
+
       duration: lesson.duration || 0,
+
       description: lesson.description || '',
+
     });
+
     setError('');
+
   };
 
   const handleEditLessonFormChange = (field, value) => {
+
     setEditLessonForm((prev) => ({ ...prev, [field]: value }));
+
   };
 
   const handleCancelEditLesson = () => {
+
     setEditingLessonId(null);
+
     setEditingLessonModuleId(null);
+
     setEditLessonForm({ ...emptyLessonForm });
+
   };
 
   const handleUpdateLesson = async () => {
+
     if (!editingLessonId) return;
 
     const lessonForm = editLessonForm;
 
     if (!lessonForm.title?.trim()) {
+
       setError('Content title is required');
+
       return;
+
     }
 
-    if (lessonForm.contentType === 'video' && !lessonForm.videoUrl?.trim()) {
-      setError('Video URL is required');
+    if (
+
+      lessonForm.contentType === 'video' &&
+
+      !lessonForm.videoFile &&
+
+      !lessonForm.videoUrl?.trim() &&
+
+      !lessonForm.videoKey
+
+    ) {
+
+      setError('Please upload a video file for this lesson.');
+
       return;
+
     }
 
     if (lessonForm.contentType === 'document') {
+
       if (lessonForm.documentType === 'url' && !lessonForm.documentUrl?.trim()) {
+
         setError('Please enter a documentation URL');
+
         return;
+
       }
 
       if (lessonForm.documentType === 'text' && !lessonForm.documentText?.trim()) {
+
         setError('Please enter document content');
+
         return;
+
       }
 
       if (
+
         lessonForm.documentType === 'pdf' &&
+
         !lessonForm.documentFile &&
-        !lessonForm.documentUrl
+
+        !lessonForm.documentUrl &&
+
+        !lessonForm.documentKey
+
       ) {
+
         setError('Please select a PDF document');
+
         return;
+
       }
+
     }
 
-
     try {
+
       setUpdatingLesson(true);
+
       setError('');
 
       const formData = new FormData();
-      formData.append('title', lessonForm.title);
-      formData.append('contentType', lessonForm.contentType);
-      formData.append('description', lessonForm.description || '');
-      formData.append('duration', lessonForm.duration || 0);
 
-      if (lessonForm.contentType === 'video') {
-        formData.append('videoUrl', lessonForm.videoUrl);
+      formData.append('title', lessonForm.title);
+
+      formData.append('contentType', lessonForm.contentType);
+
+      formData.append('description', lessonForm.description || '');
+
+      if (lessonForm.contentType === 'document') {
+        formData.append('duration', lessonForm.duration || 0);
+      }
+
+      if (lessonForm.contentType === 'video' && lessonForm.videoFile) {
+        formData.append('video', lessonForm.videoFile);
       }
 
       if (lessonForm.contentType === 'document') {
+
         formData.append('documentType', lessonForm.documentType);
+
         if (lessonForm.documentType === 'pdf' && lessonForm.documentFile) {
+
           formData.append('document', lessonForm.documentFile);
+
         }
+
         if (lessonForm.documentType === 'url') {
+
           formData.append('documentUrl', lessonForm.documentUrl);
+
         }
+
         if (lessonForm.documentType === 'text') {
+
           formData.append('documentText', lessonForm.documentText);
+
         }
+
       }
 
-
       const { data } = await api.put(
+
         `/lessons/${editingLessonId}`,
+
         formData
+
       );
 
       setModules((currentModules) =>
+
         currentModules.map((module) =>
+
           module._id === editingLessonModuleId
+
             ? {
+
               ...module,
+
               lessons: (module.lessons || []).map((lesson) =>
+
                 lesson._id === editingLessonId ? data.data : lesson
+
               ),
+
             }
+
             : module
+
         )
+
       );
 
       setSuccess('Content updated successfully');
+
       handleCancelEditLesson();
+
     } catch (err) {
+
       setError(err.message);
+
     } finally {
+
       setUpdatingLesson(false);
+
     }
+
   };
 
   // ===================================================
@@ -1352,8 +1137,6 @@ const EditCourse = () => {
   // LESSON FORM UPDATE
 
   // ===================================================
-
-
 
   const updateLessonForm = (
 
@@ -1369,8 +1152,6 @@ const EditCourse = () => {
 
       ...lessonForms,
 
-
-
       [moduleId]: {
 
         ...(lessonForms[
@@ -1383,8 +1164,6 @@ const EditCourse = () => {
 
         }),
 
-
-
         [field]: value,
 
       },
@@ -1393,17 +1172,11 @@ const EditCourse = () => {
 
   };
 
-
-
-
-
   // ===================================================
 
   // LOADING
 
   // ===================================================
-
-
 
   if (loading) {
 
@@ -1419,23 +1192,15 @@ const EditCourse = () => {
 
   }
 
-
-
-
-
   // ===================================================
 
   // UI
 
   // ===================================================
 
-
-
   return (
 
     <div>
-
-
 
       {/* ==============================================
 
@@ -1443,11 +1208,7 @@ const EditCourse = () => {
 
       ============================================== */}
 
-
-
       <div className="mb-6">
-
-
 
         <Link
 
@@ -1461,29 +1222,19 @@ const EditCourse = () => {
 
         </Link>
 
-
-
         <h2 className="text-2xl font-bold text-gray-900">
 
           Edit Course
 
         </h2>
 
-
-
       </div>
-
-
-
-
 
       {/* ==============================================
 
           ALERTS
 
       ============================================== */}
-
-
 
       <Alert
 
@@ -1499,8 +1250,6 @@ const EditCourse = () => {
 
       />
 
-
-
       <Alert
 
         type="success"
@@ -1515,15 +1264,7 @@ const EditCourse = () => {
 
       />
 
-
-
-
-
       <div className="grid gap-6 lg:grid-cols-2">
-
-
-
-
 
         {/* ============================================
 
@@ -1531,21 +1272,13 @@ const EditCourse = () => {
 
         ============================================ */}
 
-
-
         <div className="card">
-
-
 
           <h3 className="mb-4 font-semibold">
 
             Course Details
 
           </h3>
-
-
-
-
 
           {course?.thumbnail && (
 
@@ -1565,10 +1298,6 @@ const EditCourse = () => {
 
           )}
 
-
-
-
-
           <form
 
             onSubmit={
@@ -1581,19 +1310,13 @@ const EditCourse = () => {
 
           >
 
-
-
             <div>
-
-
 
               <label className="mb-1 block text-sm font-medium">
 
                 Course Title
 
               </label>
-
-
 
               <input
 
@@ -1613,25 +1336,15 @@ const EditCourse = () => {
 
               />
 
-
-
             </div>
 
-
-
-
-
             <div>
-
-
 
               <label className="mb-1 block text-sm font-medium">
 
                 Course Description
 
               </label>
-
-
 
               <textarea
 
@@ -1657,29 +1370,17 @@ const EditCourse = () => {
 
               />
 
-
-
             </div>
-
-
-
-
 
             <div className="grid grid-cols-2 gap-3">
 
-
-
               <div>
-
-
 
                 <label className="mb-1 block text-sm font-medium">
 
                   Price (INR)
 
                 </label>
-
-
 
                 <input
 
@@ -1701,25 +1402,15 @@ const EditCourse = () => {
 
                 />
 
-
-
               </div>
 
-
-
-
-
               <div>
-
-
 
                 <label className="mb-1 block text-sm font-medium">
 
                   Category
 
                 </label>
-
-
 
                 <input
 
@@ -1743,33 +1434,19 @@ const EditCourse = () => {
 
                 />
 
-
-
               </div>
-
-
 
             </div>
 
-
-
-
-
             <div className="grid grid-cols-2 gap-3">
 
-
-
               <div>
-
-
 
                 <label className="mb-1 block text-sm font-medium">
 
                   Level
 
                 </label>
-
-
 
                 <select
 
@@ -1793,15 +1470,11 @@ const EditCourse = () => {
 
                   </option>
 
-
-
                   <option value="intermediate">
 
                     Intermediate
 
                   </option>
-
-
 
                   <option value="advanced">
 
@@ -1811,25 +1484,15 @@ const EditCourse = () => {
 
                 </select>
 
-
-
               </div>
 
-
-
-
-
               <div>
-
-
 
                 <label className="mb-1 block text-sm font-medium">
 
                   Instructor
 
                 </label>
-
-
 
                 <input
 
@@ -1853,21 +1516,11 @@ const EditCourse = () => {
 
                 />
 
-
-
               </div>
-
-
 
             </div>
 
-
-
-
-
             <div>
-
-
 
               <label className="mb-1 block text-sm font-medium">
 
@@ -1875,13 +1528,11 @@ const EditCourse = () => {
 
               </label>
 
-
-
               <input
 
                 type="file"
 
-                accept="image/*"
+                accept="image/\*"
 
                 onChange={(e) =>
 
@@ -1899,17 +1550,9 @@ const EditCourse = () => {
 
               />
 
-
-
             </div>
 
-
-
-
-
             <label className="flex items-center gap-2">
-
-
 
               <input
 
@@ -1931,21 +1574,13 @@ const EditCourse = () => {
 
               />
 
-
-
               <span className="text-sm">
 
                 Published
 
               </span>
 
-
-
             </label>
-
-
-
-
 
             <button
 
@@ -1965,17 +1600,9 @@ const EditCourse = () => {
 
             </button>
 
-
-
           </form>
 
-
-
         </div>
-
-
-
-
 
         {/* ============================================
 
@@ -1983,13 +1610,7 @@ const EditCourse = () => {
 
         ============================================ */}
 
-
-
         <div className="space-y-6">
-
-
-
-
 
           {/* ==========================================
 
@@ -1997,19 +1618,13 @@ const EditCourse = () => {
 
           ========================================== */}
 
-
-
           <div className="card">
-
-
 
             <h3 className="mb-4 font-semibold">
 
               Add Module
 
             </h3>
-
-
 
             <form
 
@@ -2022,8 +1637,6 @@ const EditCourse = () => {
               className="flex gap-2"
 
             >
-
-
 
               <input
 
@@ -2053,8 +1666,6 @@ const EditCourse = () => {
 
               />
 
-
-
               <button
 
                 type="submit"
@@ -2067,17 +1678,9 @@ const EditCourse = () => {
 
               </button>
 
-
-
             </form>
 
-
-
           </div>
-
-
-
-
 
           {/* ==========================================
 
@@ -2085,13 +1688,9 @@ const EditCourse = () => {
 
           ========================================== */}
 
-
-
           {modules.map(
 
             (module, mIdx) => {
-
-
 
               const lessonForm =
 
@@ -2105,10 +1704,6 @@ const EditCourse = () => {
 
                 };
 
-
-
-
-
               return (
 
                 <div
@@ -2119,15 +1714,9 @@ const EditCourse = () => {
 
                 >
 
-
-
                   {/* MODULE HEADER */}
 
-
-
                   <div className="mb-3 flex items-center justify-between">
-
-
 
                     <h4 className="font-medium">
 
@@ -2136,8 +1725,6 @@ const EditCourse = () => {
                       {module.title}
 
                     </h4>
-
-
 
                     <button
 
@@ -2159,135 +1746,242 @@ const EditCourse = () => {
 
                     </button>
 
-
-
                   </div>
-
-
-
-
 
                   {/* EXISTING CONTENT */}
 
-
-
                   <ul className="mb-4 space-y-1">
 
-
-
                     {module.lessons?.map((lesson) => (
+
                       <div key={lesson._id} className="space-y-2">
+
                         <li className="flex items-center justify-between rounded bg-gray-50 px-3 py-2 text-sm">
+
                           <span className="flex items-center gap-2">
+
                             {lesson.contentType === 'video' && '🎥'}
+
                             {lesson.contentType === 'document' && '📄'}
+
                             <span>{lesson.title}</span>
+
                           </span>
+
                           <div className="flex items-center gap-3">
+
                             <button type="button" onClick={() => handleStartEditLesson(module._id, lesson)} className="text-primary-600 hover:underline">
+
                               Edit
+
                             </button>
+
                             <button type="button" onClick={() => handleDeleteLesson(module._id, lesson._id)} className="text-red-500 hover:underline">
+
                               Remove
+
                             </button>
+
                           </div>
+
                         </li>
 
                         {editingLessonId === lesson._id && (
+
                           <div className="rounded-lg border border-primary-200 bg-white p-4 shadow-sm">
+
                             <div className="mb-4 flex items-center justify-between">
+
                               <h4 className="font-semibold">Edit Content</h4>
+
                               <button type="button" onClick={handleCancelEditLesson} className="text-sm text-gray-500 hover:underline">
+
                                 Cancel
+
                               </button>
+
                             </div>
 
                             <div className="space-y-4">
+
                               <div>
+
                                 <label className="mb-1 block text-sm font-medium">Content Type</label>
+
                                 <select className="input-field" value={editLessonForm.contentType} onChange={(e) => handleEditLessonFormChange('contentType', e.target.value)}>
+
                                   <option value="video">🎥 Video</option>
+
                                   <option value="document">📄 Document</option>
+
                                 </select>
+
                               </div>
 
                               <div>
+
                                 <label className="mb-1 block text-sm font-medium">Content Title</label>
+
                                 <input className="input-field" value={editLessonForm.title} onChange={(e) => handleEditLessonFormChange('title', e.target.value)} />
+
                               </div>
 
                               {editLessonForm.contentType === 'video' && (
-                                <div>
-                                  <label className="mb-1 block text-sm font-medium">Video URL</label>
-                                  <input className="input-field" value={editLessonForm.videoUrl} onChange={(e) => handleEditLessonFormChange('videoUrl', e.target.value)} />
-                                </div>
+
+                                <>
+
+                                  <div>
+
+                                    <label className="mb-1 block text-sm font-medium">
+
+                                      Upload replacement video (MP4, WebM, MOV, or M4V)
+
+                                    </label>
+
+                                    <input
+
+                                      type="file"
+
+                                      accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v"
+
+                                      className="input-field"
+
+                                      onChange={(e) =>
+
+                                        handleEditLessonFormChange(
+
+                                          'videoFile',
+
+                                          e.target.files?.[0] || null
+
+                                        )
+
+                                      }
+
+                                    />
+
+                                    <p className="mt-1 text-xs text-gray-500">
+
+                                      Leave empty to keep the current video. Uploaded video duration is detected automatically.
+
+                                    </p>
+
+                                  </div>
+
+                                </>
+
                               )}
 
                               {editLessonForm.contentType === 'document' && (
+
                                 <>
+
                                   <div>
+
                                     <label className="mb-1 block text-sm font-medium">Document Type</label>
+
                                     <select className="input-field" value={editLessonForm.documentType} onChange={(e) => handleEditLessonFormChange('documentType', e.target.value)}>
+
                                       <option value="pdf">📕 PDF</option>
+
                                       <option value="url">🔗 Web URL</option>
+
                                       <option value="text">📝 Text Content</option>
+
                                     </select>
+
                                   </div>
 
                                   {editLessonForm.documentType === 'pdf' && (
+
                                     <div>
+
                                       <label className="mb-1 block text-sm font-medium">Replace PDF</label>
+
                                       <input type="file" accept="application/pdf,.pdf" className="input-field" onChange={(e) => handleEditLessonFormChange('documentFile', e.target.files[0] || null)} />
+
                                       <p className="mt-1 text-xs text-gray-500">Leave empty to keep the existing PDF.</p>
+
                                     </div>
+
                                   )}
 
                                   {editLessonForm.documentType === 'url' && (
+
                                     <div>
+
                                       <label className="mb-1 block text-sm font-medium">Documentation URL</label>
+
                                       <input type="url" className="input-field" value={editLessonForm.documentUrl} onChange={(e) => handleEditLessonFormChange('documentUrl', e.target.value)} />
+
                                     </div>
+
                                   )}
 
                                   {editLessonForm.documentType === 'text' && (
+
                                     <div>
+
                                       <label className="mb-1 block text-sm font-medium">Document Content</label>
+
                                       <textarea rows={10} className="input-field" value={editLessonForm.documentText} onChange={(e) => handleEditLessonFormChange('documentText', e.target.value)} />
+
                                     </div>
+
                                   )}
+
                                 </>
+
+                              )}
+
+                              {editLessonForm.contentType === 'document' && (
+                                <div>
+                                  <label className="mb-1 block text-sm font-medium">Estimated Duration (minutes)</label>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    className="input-field"
+                                    value={editLessonForm.duration}
+                                    onChange={(e) => handleEditLessonFormChange('duration', Number(e.target.value))}
+                                  />
+                                </div>
                               )}
 
                               <div>
-                                <label className="mb-1 block text-sm font-medium">Duration (minutes)</label>
-                                <input type="number" min="0" className="input-field" value={editLessonForm.duration} onChange={(e) => handleEditLessonFormChange('duration', Number(e.target.value))} />
-                              </div>
 
-                              <div>
                                 <label className="mb-1 block text-sm font-medium">Description</label>
+
                                 <textarea rows={3} className="input-field" value={editLessonForm.description} onChange={(e) => handleEditLessonFormChange('description', e.target.value)} />
+
                               </div>
 
                               <div className="flex gap-2">
+
                                 <button type="button" onClick={handleUpdateLesson} disabled={updatingLesson} className="btn-primary">
+
                                   {updatingLesson ? 'Saving...' : 'Save Changes'}
+
                                 </button>
+
                                 <button type="button" onClick={handleCancelEditLesson} disabled={updatingLesson} className="rounded-lg border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50">
+
                                   Cancel
+
                                 </button>
+
                               </div>
+
                             </div>
+
                           </div>
+
                         )}
+
                       </div>
+
                     ))}
 
-
                   </ul>
-
-
-
-
 
                   {/* =================================
 
@@ -2295,11 +1989,7 @@ const EditCourse = () => {
 
                   ================================= */}
 
-
-
                   <div className="space-y-4 rounded-lg border border-dashed border-gray-300 p-4">
-
-
 
                     <h3 className="text-lg font-semibold">
 
@@ -2307,25 +1997,15 @@ const EditCourse = () => {
 
                     </h3>
 
-
-
-
-
                     {/* CONTENT TYPE */}
 
-
-
                     <div>
-
-
 
                       <label className="mb-1 block text-sm font-medium">
 
                         Content Type
 
                       </label>
-
-
 
                       <select
 
@@ -2353,15 +2033,11 @@ const EditCourse = () => {
 
                       >
 
-
-
                         <option value="video">
 
                           🎥 Video
 
                         </option>
-
-
 
                         <option value="document">
 
@@ -2369,34 +2045,19 @@ const EditCourse = () => {
 
                         </option>
 
-
-
-
                       </select>
-
-
 
                     </div>
 
-
-
-
-
                     {/* CONTENT TITLE */}
 
-
-
                     <div>
-
-
 
                       <label className="mb-1 block text-sm font-medium">
 
                         Content Title
 
                       </label>
-
-
 
                       <input
 
@@ -2426,13 +2087,7 @@ const EditCourse = () => {
 
                       />
 
-
-
                     </div>
-
-
-
-
 
                     {/* =================================
 
@@ -2440,119 +2095,53 @@ const EditCourse = () => {
 
                     ================================= */}
 
+                    {lessonForm.contentType === 'video' && (
 
+                      <>
 
-                    {lessonForm.contentType ===
+                        <div>
 
-                      'video' && (
+                          <label className="mb-1 block text-sm font-medium">
 
-                        <>
+                            Upload Video (MP4, WebM, MOV, or M4V)
 
-                          <div>
+                          </label>
 
+                          <input
 
+                            type="file"
 
-                            <label className="mb-1 block text-sm font-medium">
+                            accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v"
 
-                              Video URL
+                            className="input-field"
 
-                            </label>
+                            onChange={(e) =>
 
+                              updateLessonForm(
 
+                                module._id,
 
-                            <input
+                                'videoFile',
 
-                              className="input-field"
+                                e.target.files?.[0] || null
 
-                              placeholder="YouTube or direct video URL"
+                              )
 
-                              value={
+                            }
 
-                                lessonForm.videoUrl
+                          />
 
-                              }
+                          <p className="mt-1 text-xs text-gray-500">
 
-                              onChange={(e) =>
+                            Video duration is detected automatically after upload. Maximum file size: 1 GB.
 
-                                updateLessonForm(
+                          </p>
 
-                                  module._id,
+                        </div>
 
-                                  'videoUrl',
+                      </>
 
-                                  e.target.value
-
-                                )
-
-                              }
-
-                            />
-
-
-
-                          </div>
-
-
-
-
-
-                          <div>
-
-
-
-                            <label className="mb-1 block text-sm font-medium">
-
-                              Duration (minutes)
-
-                            </label>
-
-
-
-                            <input
-
-                              type="number"
-
-                              min="0"
-
-                              className="input-field"
-
-                              value={
-
-                                lessonForm.duration
-
-                              }
-
-                              onChange={(e) =>
-
-                                updateLessonForm(
-
-                                  module._id,
-
-                                  'duration',
-
-                                  Number(
-
-                                    e.target.value
-
-                                  )
-
-                                )
-
-                              }
-
-                            />
-
-
-
-                          </div>
-
-                        </>
-
-                      )}
-
-
-
-
+                    )}
 
                     {/* =================================
 
@@ -2560,33 +2149,21 @@ const EditCourse = () => {
 
                     ================================= */}
 
-
-
                     {lessonForm.contentType ===
 
                       'document' && (
 
                         <>
 
-
-
-
-
                           {/* DOCUMENT TYPE */}
 
-
-
                           <div>
-
-
 
                             <label className="mb-1 block text-sm font-medium">
 
                               Document Type
 
                             </label>
-
-
 
                             <select
 
@@ -2616,15 +2193,11 @@ const EditCourse = () => {
 
                             >
 
-
-
                               <option value="pdf">
 
                                 📕 PDF
 
                               </option>
-
-
 
                               <option value="url">
 
@@ -2632,29 +2205,17 @@ const EditCourse = () => {
 
                               </option>
 
-
-
                               <option value="text">
 
                                 📝 Text Content
 
                               </option>
 
-
-
                             </select>
-
-
 
                           </div>
 
-
-
-
-
                           {/* PDF */}
-
-
 
                           {lessonForm.documentType ===
 
@@ -2662,15 +2223,11 @@ const EditCourse = () => {
 
                               <div>
 
-
-
                                 <label className="mb-1 block text-sm font-medium">
 
                                   Upload PDF Document
 
                                 </label>
-
-
 
                                 <input
 
@@ -2698,8 +2255,6 @@ const EditCourse = () => {
 
                                 />
 
-
-
                                 <p className="mt-1 text-xs text-gray-500">
 
                                   PDF only. Maximum size:
@@ -2708,19 +2263,11 @@ const EditCourse = () => {
 
                                 </p>
 
-
-
                               </div>
 
                             )}
 
-
-
-
-
                           {/* WEB URL */}
-
-
 
                           {lessonForm.documentType ===
 
@@ -2728,15 +2275,11 @@ const EditCourse = () => {
 
                               <div>
 
-
-
                                 <label className="mb-1 block text-sm font-medium">
 
                                   Documentation URL
 
                                 </label>
-
-
 
                                 <input
 
@@ -2770,8 +2313,6 @@ const EditCourse = () => {
 
                                 />
 
-
-
                                 <p className="mt-1 text-xs text-gray-500">
 
                                   Student will open this
@@ -2780,19 +2321,11 @@ const EditCourse = () => {
 
                                 </p>
 
-
-
                               </div>
 
                             )}
 
-
-
-
-
                           {/* TEXT */}
-
-
 
                           {lessonForm.documentType ===
 
@@ -2800,15 +2333,11 @@ const EditCourse = () => {
 
                               <div>
 
-
-
                                 <label className="mb-1 block text-sm font-medium">
 
                                   Document Content
 
                                 </label>
-
-
 
                                 <textarea
 
@@ -2842,8 +2371,6 @@ const EditCourse = () => {
 
                                 />
 
-
-
                                 <p className="mt-1 text-xs text-gray-500">
 
                                   This content will be shown
@@ -2852,31 +2379,19 @@ const EditCourse = () => {
 
                                 </p>
 
-
-
                               </div>
 
                             )}
 
-
-
-
-
                           {/* DOCUMENT DURATION */}
 
-
-
                           <div>
-
-
 
                             <label className="mb-1 block text-sm font-medium">
 
                               Estimated Duration (minutes)
 
                             </label>
-
-
 
                             <input
 
@@ -2912,24 +2427,11 @@ const EditCourse = () => {
 
                             />
 
-
-
                           </div>
-
-
 
                         </>
 
                       )}
-
-
-
-
-
-
-
-
-
 
                     {/* =================================
 
@@ -2937,19 +2439,13 @@ const EditCourse = () => {
 
                     ================================= */}
 
-
-
                     <div>
-
-
 
                       <label className="mb-1 block text-sm font-medium">
 
                         Description
 
                       </label>
-
-
 
                       <textarea
 
@@ -2981,23 +2477,9 @@ const EditCourse = () => {
 
                       />
 
-
-
                     </div>
 
-
-
-
-
-
-
-
-
-
-
                     {/* ADD BUTTON */}
-
-
 
                     <button
 
@@ -3021,11 +2503,7 @@ const EditCourse = () => {
 
                     </button>
 
-
-
                   </div>
-
-
 
                 </div>
 
@@ -3035,22 +2513,14 @@ const EditCourse = () => {
 
           )}
 
-
-
         </div>
 
-
-
       </div>
-
-
 
     </div>
 
   );
 
 };
-
-
 
 export default EditCourse;

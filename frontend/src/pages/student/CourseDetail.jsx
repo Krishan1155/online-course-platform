@@ -38,6 +38,8 @@ import {
 
 
 
+
+
 const CourseDetail = () => {
 
   const { id } = useParams();
@@ -1426,17 +1428,12 @@ console.log(data.data);
 
             </span>
 
-
-
-            <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700">
-
-              {formatDuration(
-
-                course.totalDuration
-
-              )}
-
-            </span>
+{/* Course Total Duration */}
+{course.totalDuration > 0 && (
+  <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700">
+    {formatDuration(course.totalDuration)}
+  </span>
+)}
 
           </div>
 
@@ -1812,16 +1809,10 @@ console.log(data.data);
                             </span>
 
 
-
-                            <span className="text-gray-400">
-
-                              {formatDuration(
-
-                                lesson.duration
-
-                              )}
-
-                            </span>
+{/* Duration */}
+<span className="text-gray-400">
+  {formatDuration(lesson.duration)}
+</span>
 
                           </li>
 

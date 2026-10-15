@@ -6,13 +6,39 @@ export const formatPrice = (price) => {
   }).format(price);
 };
 
+
 export const formatDuration = (minutes) => {
-  if (!minutes) return '0 min';
-  const hrs = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  if (hrs > 0) return `${hrs}h ${mins}m`;
-  return `${mins} min`;
+  const totalSeconds = Math.round(Number(minutes || 0) * 60);
+
+  if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) {
+    return '0 min';
+  }
+
+  if (totalSeconds < 60) {
+    return `${totalSeconds} sec`;
+  }
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const remainingMinutes = Math.floor(
+    (totalSeconds % 3600) / 60
+  );
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    if (remainingMinutes > 0) {
+      return `${hours} hr ${remainingMinutes} min`;
+    }
+
+    return `${hours} hr`;
+  }
+
+  if (seconds > 0) {
+    return `${remainingMinutes} min ${seconds} sec`;
+  }
+
+  return `${remainingMinutes} min`;
 };
+
 
 export const getImageUrl = (path) => {
   if (!path) return 'https://placehold.co/600x400/indigo/white?text=Course';

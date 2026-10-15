@@ -1,3 +1,4 @@
+
 import express from 'express';
 
 import {
@@ -13,54 +14,39 @@ import {
 } from '../middleware/authMiddleware.js';
 
 import {
-  uploadDocument,
+  uploadLessonMedia,
 } from '../middleware/uploadMiddleware.js';
 
 const router = express.Router();
 
-// =====================================================
-// GET LESSON
-// =====================================================
+// Get lesson details.
+router.get('/:id', protect, getLessonById);
 
-router.get(
-  '/:id',
-  protect,
-  getLessonById
-);
-
-// =====================================================
-// CREATE LESSON
-// =====================================================
-
+// Admin creates a lesson with an optional video or PDF upload.
 router.post(
   '/module/:moduleId',
   protect,
   authorize('admin'),
-  uploadDocument.single('document'),
+  uploadLessonMedia.fields([
+    { name: 'video', maxCount: 1 },
+    { name: 'document', maxCount: 1 },
+  ]),
   createLesson
 );
 
-// =====================================================
-// UPDATE LESSON
-// =====================================================
-
+// Admin updates lesson details or replaces its media.
 router.put(
   '/:id',
   protect,
   authorize('admin'),
-  uploadDocument.single('document'),
+  uploadLessonMedia.fields([
+    { name: 'video', maxCount: 1 },
+    { name: 'document', maxCount: 1 },
+  ]),
   updateLesson
 );
 
-// =====================================================
-// DELETE LESSON
-// =====================================================
-
-router.delete(
-  '/:id',
-  protect,
-  authorize('admin'),
-  deleteLesson
-);
+// Preserve the existing delete handler.
+router.delete('/:id', protect, deleteLesson);
 
 export default router;
