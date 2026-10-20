@@ -1,12 +1,19 @@
-import { Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+
+import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
 import api from '../api/axios';
 import CourseCard from '../components/CourseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
+import SpecularButton from '../components/SpecularButton';
+import TargetCursor from '../components/TargetCursor';
 
 const Home = () => {
+  const coursesSectionRef = useRef(null);
+
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -19,69 +26,119 @@ const Home = () => {
         setLoading(false);
       }
     };
+
     fetchCourses();
   }, []);
 
   return (
     <div>
+      {/* Target Cursor: Featured Courses section only */}
+      <TargetCursor
+  targetSelector=".cursor-target"
+  container={coursesSectionRef}
+  cursorColor="#2563eb"
+  cursorColorOnTarget="#2563eb"
+  blendMode="normal"
+  showLabel
+  hideDefaultCursor
+/>
+
+      {/* Hero Section */}
       <section className="bg-gradient-to-br from-primary-600 to-primary-800 text-white">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
             <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
               Learn new skills online with expert instructors
             </h1>
+
             <p className="mb-8 text-lg text-primary-100">
-              Browse courses, learn at your own pace, and track your learning progress — all in one place.
+              Browse courses, learn at your own pace, and track your learning
+              progress — all in one place.
             </p>
-            <div className="flex flex-wrap gap-4">
-              <Link to="/courses" className="rounded-lg bg-white px-6 py-3 font-semibold text-primary-700 hover:bg-primary-50">
+
+            {/* Animated Hero Buttons */}
+            <div className="relative z-10 flex flex-wrap items-center gap-4">
+              <SpecularButton
+                size="lg"
+                radius={12}
+                tint="#ffffff"
+                tintOpacity={0.12}
+                textColor="#ffffff"
+                lineColor="#ffffff"
+                baseColor="#4f46e5"
+                intensity={1}
+                idleIntensity={0.35}
+                shineSize={10}
+                shineFade={34}
+                thickness={1.2}
+                glow={1}
+                followMouse
+                proximity={250}
+                onClick={() => navigate('/courses')}
+              >
                 Browse Courses
-              </Link>
-              <Link to="/register" className="rounded-lg border border-white/30 px-6 py-3 font-semibold hover:bg-white/10">
+              </SpecularButton>
+
+              <SpecularButton
+                size="lg"
+                radius={12}
+                tint="#ffffff"
+                tintOpacity={0.12}
+                textColor="#ffffff"
+                lineColor="#ffffff"
+                baseColor="#4f46e5"
+                intensity={1}
+                idleIntensity={0.35}
+                shineSize={10}
+                shineFade={34}
+                thickness={1.2}
+                glow={1}
+                followMouse
+                proximity={250}
+                onClick={() => navigate('/register')}
+              >
                 Get Started Free
-              </Link>
+              </SpecularButton>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Featured Courses</h2>
-          <Link to="/courses" className="text-sm font-medium text-primary-600 hover:underline">
-            View all →
-          </Link>
-        </div>
+      {/* Featured Courses */}
+<section
+  ref={coursesSectionRef}
+  className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8"
+>
+  <div className="mb-8 flex items-center justify-between">
+    <h2
+  className="cursor-target text-2xl font-bold text-gray-900"
+  data-cursor-label=""
+>
+  Featured Courses
+</h2>
 
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <LoadingSpinner size="lg" />
-          </div>
-        ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {courses.map((course) => (
-              <CourseCard key={course._id} course={course} />
-            ))}
-          </div>
-        )}
-      </section>
+   <Link
+  to="/courses"
+  className="cursor-target text-sm font-medium text-primary-600 hover:underline"
+  data-cursor-label=""
+>
+  View all →
+</Link>
+  </div>
 
-      <section className="bg-white py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-8 md:grid-cols-3">
-            {[
-              { title: 'Expert Instructors', desc: 'Learn from industry professionals with real-world experience.' },
-              { title: 'Flexible Learning', desc: 'Study at your own pace with lifetime access to course content.' },
-              { title: 'Secure Payments', desc: 'Pay safely with Razorpay and start learning immediately.' },
-            ].map((item) => (
-              <div key={item.title} className="card text-center">
-                <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
-                <p className="text-sm text-gray-600">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+  {/* Course cards */}
+  {loading ? (
+    <div className="flex justify-center py-12">
+      <LoadingSpinner size="lg" />
+    </div>
+  ) : (
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {courses.map((course) => (
+        <CourseCard key={course._id} course={course} />
+      ))}
+    </div>
+  )}
+</section>
     </div>
   );
 };

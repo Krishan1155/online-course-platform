@@ -7,17 +7,14 @@ import {
 } from '../utils/helpers';
 
 const CourseCard = ({ course }) => {
-  const rating = Number(
-    course.ratingAverage || 0
-  );
-
-  const ratingCount =
-    course.ratingCount || 0;
+  const rating = Number(course.ratingAverage || 0);
+  const ratingCount = course.ratingCount || 0;
 
   return (
     <Link
       to={`/courses/${course._id}`}
-      className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
+      className="cursor-target group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
+      data-cursor-label="View Course"
     >
       <div className="aspect-video overflow-hidden bg-gray-100">
         <img
@@ -58,12 +55,8 @@ const CourseCard = ({ course }) => {
             </span>
 
             <span className="text-sm tracking-wide text-amber-500">
-              {'★'.repeat(
-                Math.round(rating)
-              )}
-              {'☆'.repeat(
-                5 - Math.round(rating)
-              )}
+              {'★'.repeat(Math.round(rating))}
+              {'☆'.repeat(5 - Math.round(rating))}
             </span>
 
             <span className="text-xs text-gray-500">
@@ -85,10 +78,7 @@ const CourseCard = ({ course }) => {
 
           <span className="text-xs text-gray-500">
             {course.totalLessons || 0}{' '}
-            lessons ·{' '}
-            {formatDuration(
-              course.totalDuration
-            )}
+            lessons · {formatDuration(course.totalDuration)}
           </span>
         </div>
       </div>

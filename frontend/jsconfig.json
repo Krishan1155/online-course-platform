@@ -1,0 +1,10 @@
+// This tells the editor and tooling that @/components/Navbar refers to a file inside src/components/Navbar
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src"]
+}

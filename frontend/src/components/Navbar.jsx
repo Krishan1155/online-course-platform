@@ -1,13 +1,59 @@
+
 import { useState } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import GooeyNav from './GooeyNav';
 
 const Navbar = () => {
   const { user, logout, isAuthenticated, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+
+  // Build navigation items based on the user's role.
+  const navItems = [
+    { label: 'Home', href: '#', route: '/' },
+    { label: 'Courses', href: '#', route: '/courses' },
+
+    ...(isAuthenticated
+      ? [{ label: 'My Courses', href: '#', route: '/my-courses' }]
+      : []),
+
+    ...(isAdmin
+      ? [{ label: 'Admin', href: '#', route: '/admin' }]
+      : []),
+  ];
+
+  // Keep the active pill synchronized with the current URL.
+  const activeIndex = Math.max(
+    0,
+    navItems.findIndex(({ route }) =>
+      route === '/'
+        ? location.pathname === '/'
+        : location.pathname === route ||
+          location.pathname.startsWith(`${route}/`)
+    )
+  );
+
+  // Navigate to a page or scroll to the top if already on that page.
+  const handleNavigation = (index, item) => {
+    if (!item?.route) return;
+
+    if (location.pathname === item.route) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    } else {
+      navigate(item.route);
+    }
+  };
+
+  // Handle brand and mobile links when the current page is already active.
+  const handleSamePageClick = (route) => {
+    if (location.pathname === route) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    }
+  };
 
   const handleLogout = async () => {
     if (loggingOut) return;
@@ -25,49 +71,49 @@ const Navbar = () => {
     }
   };
 
-  const linkClass = ({ isActive }) =>
-    `text-sm font-medium transition ${
-      isActive
-        ? 'text-primary-600'
-        : 'text-gray-600 hover:text-primary-600'
-    }`;
-
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur">
-        <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <Link to="/" className="flex items-center gap-2">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+          {/* Brand */}
+          <Link
+            to="/"
+            onClick={() => handleSamePageClick('/')}
+            className="flex shrink-0 items-center gap-2"
+          >
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600 text-lg font-bold text-white">
               C
             </span>
+
             <span className="text-xl font-bold text-gray-900">
               CoursePlatform
             </span>
           </Link>
 
-          <div className="hidden items-center gap-6 md:flex">
-            <NavLink to="/" className={linkClass} end>
-              Home
-            </NavLink>
-
-            <NavLink to="/courses" className={linkClass}>
-              Courses
-            </NavLink>
-
-            {isAuthenticated && (
-              <NavLink to="/my-courses" className={linkClass}>
-                My Courses
-              </NavLink>
-            )}
-
-            {isAdmin && (
-              <NavLink to="/admin" className={linkClass}>
-                Admin
-              </NavLink>
-            )}
+          {/* Animated navigation */}
+          <div className="hidden min-w-0 items-center justify-center md:flex">
+            <GooeyNav
+              items={navItems}
+              activeIndex={activeIndex}
+              onChange={handleNavigation}
+              theme="light"
+              color="#4f46e5"
+              activeTextColor="#ffffff"
+              size="lg"
+              frame={false}
+              particleCount={12}
+              spread={42}
+              animationTime={500}
+              timeVariance={150}
+              gooeyness={0.45}
+              wobble={0.35}
+              hoverEffect
+              className="max-w-full"
+            />
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* Authentication controls */}
+          <div className="flex shrink-0 items-center gap-3">
             {isAuthenticated ? (
               <>
                 <span className="hidden text-sm text-gray-600 sm:inline">
@@ -94,9 +140,30 @@ const Navbar = () => {
               </>
             )}
           </div>
-        </nav>
+        </div>
+
+        {/* Mobile navigation */}
+        <div className="flex flex-wrap justify-center gap-x-5 gap-y-3 border-t border-gray-100 px-4 py-3 md:hidden">
+          {navItems.map(({ label, route }) => (
+            <Link
+              key={route}
+              to={route}
+              onClick={() => handleSamePageClick(route)}
+              className={`text-sm font-medium transition-colors ${
+                location.pathname === route ||
+                (route !== '/' &&
+                  location.pathname.startsWith(`${route}/`))
+                  ? 'text-primary-600'
+                  : 'text-gray-600 hover:text-primary-600'
+              }`}
+            >
+              {label}
+            </Link>
+          ))}
+        </div>
       </header>
 
+      {/* Logout confirmation modal */}
       {showLogoutModal && isAuthenticated && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"

@@ -24,8 +24,10 @@ import AdminEnrollments from './pages/admin/Enrollments';
 import AdminRevenue from './pages/admin/Revenue';
 
 
+
 function App() {
   return (
+    <>
     <Routes>
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
@@ -71,6 +73,7 @@ function App() {
         <Route path="revenue" element={<AdminRevenue />} />
       </Route>
     </Routes>
+    </>
   );
 }
 

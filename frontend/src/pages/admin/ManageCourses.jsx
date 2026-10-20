@@ -43,70 +43,143 @@ const AdminCourses = () => {
   }
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Manage Courses</h2>
-        <Link to="/admin/courses/create" className="btn-primary">
-          + Create Course
+    <div className="min-w-0">
+      {/* Page heading */}
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-gray-900">
+            Manage Courses
+          </h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Manage courses, pricing, and publication status.
+          </p>
+        </div>
+
+        <Link
+          to="/admin/courses/create"
+          className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+        >
+          <span className="text-lg leading-none">+</span>
+          Create Course
         </Link>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Course</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Category</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Price</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Status</th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase text-gray-500">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {courses.map((course) => (
-              <tr key={course._id} className="hover:bg-gray-50">
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={getImageUrl(course.thumbnail)}
-                      alt=""
-                      className="h-10 w-16 rounded object-cover"
-                    />
-                    <span className="font-medium text-gray-900">{course.title}</span>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-600">{course.category}</td>
-                <td className="px-4 py-3 text-sm">{course.price === 0 ? 'Free' : formatPrice(course.price)}</td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                      course.isPublished ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                    }`}
-                  >
-                    {course.isPublished ? 'Published' : 'Draft'}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <Link
-                    to={`/admin/courses/edit/${course._id}`}
-                    className="mr-2 text-sm text-primary-600 hover:underline"
-                  >
-                    Edit
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(course._id, course.title)}
-                    className="text-sm text-red-600 hover:underline"
-                  >
-                    Delete
-                  </button>
-                </td>
+      {/* Table */}
+      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[850px] table-fixed divide-y divide-gray-200">
+            <colgroup>
+              <col className="w-[43%]" />
+              <col className="w-[17%]" />
+              <col className="w-[12%]" />
+              <col className="w-[13%]" />
+              <col className="w-[15%]" />
+            </colgroup>
+
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Course
+                </th>
+                <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Category
+                </th>
+                <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Price
+                </th>
+                <th className="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Status
+                </th>
+                <th className="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Actions
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody className="divide-y divide-gray-100">
+              {courses.map((course) => (
+                <tr
+                  key={course._id}
+                  className="transition-colors duration-200 hover:bg-indigo-50/40"
+                >
+                  {/* Course */}
+                  <td className="px-5 py-4">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <img
+                        src={getImageUrl(course.thumbnail)}
+                        alt=""
+                        className="h-12 w-16 shrink-0 rounded-lg border border-gray-100 bg-gray-50 object-cover"
+                      />
+                      <span className="min-w-0 break-words text-sm font-semibold leading-5 text-gray-900">
+                        {course.title}
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* Category */}
+                  <td className="px-4 py-4 text-sm leading-5 text-gray-600">
+                    <span className="break-words">{course.category}</span>
+                  </td>
+
+                  {/* Price */}
+                  <td className="whitespace-nowrap px-4 py-4 text-sm font-semibold text-gray-800">
+                    {course.price === 0 ? 'Free' : formatPrice(course.price)}
+                  </td>
+
+                  {/* Status */}
+                  <td className="px-4 py-4 text-center">
+                    <span
+                      className={`inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${
+                        course.isPublished
+                          ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+                          : 'bg-amber-50 text-amber-700 ring-amber-200'
+                      }`}
+                    >
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full ${
+                          course.isPublished
+                            ? 'bg-emerald-500'
+                            : 'bg-amber-500'
+                        }`}
+                      />
+                      {course.isPublished ? 'Published' : 'Draft'}
+                    </span>
+                  </td>
+
+                  {/* Actions */}
+                  <td className="px-4 py-4">
+                    <div className="flex items-center justify-center gap-2">
+                      <Link
+                        to={`/admin/courses/edit/${course._id}`}
+                        aria-label={`Edit ${course.title}`}
+                        className="inline-flex items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 transition-colors duration-200 hover:border-indigo-300 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1"
+                      >
+                        Edit
+                      </Link>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(course._id, course.title)}
+                        aria-label={`Delete ${course.title}`}
+                        className="inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition-colors duration-200 hover:border-red-300 hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {courses.length === 0 && (
-          <div className="py-12 text-center text-gray-500">No courses yet. Create your first course!</div>
+          <div className="px-6 py-14 text-center">
+            <h3 className="font-semibold text-gray-900">No courses yet</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Create your first course to get started.
+            </p>
+          </div>
         )}
       </div>
     </div>
