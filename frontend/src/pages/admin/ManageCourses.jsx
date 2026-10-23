@@ -65,9 +65,9 @@ const AdminCourses = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[850px] table-fixed divide-y divide-gray-200">
+      <div className="w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+  <div className="w-full overflow-x-auto">
+    <table className="w-full table-auto divide-y divide-gray-200">
             <colgroup>
               <col className="w-[43%]" />
               <col className="w-[17%]" />
@@ -90,9 +90,9 @@ const AdminCourses = () => {
                 <th className="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
                   Status
                 </th>
-                <th className="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Actions
-                </th>
+                <th className="w-[170px] px-2 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                 Actions
+                 </th>
               </tr>
             </thead>
 
@@ -147,13 +147,14 @@ const AdminCourses = () => {
                   </td>
 
                   {/* Actions */}
-                  <td className="px-4 py-4">
-                    <div className="flex items-center justify-center gap-2">
+                  <td className="w-[170px] whitespace-nowrap px-2 py-4">
+                     <div className="flex items-center justify-center gap-1.5">
+
                       <Link
                         to={`/admin/courses/edit/${course._id}`}
                         aria-label={`Edit ${course.title}`}
-                        className="inline-flex items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 transition-colors duration-200 hover:border-indigo-300 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1"
-                      >
+                        className="inline-flex items-center justify-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-xs font-semibold text-indigo-600 transition-colors hover:bg-indigo-100 whitespace-nowrap">
+                        <span aria-hidden="true">✎</span>
                         Edit
                       </Link>
 
@@ -161,8 +162,8 @@ const AdminCourses = () => {
                         type="button"
                         onClick={() => handleDelete(course._id, course.title)}
                         aria-label={`Delete ${course.title}`}
-                        className="inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition-colors duration-200 hover:border-red-300 hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1"
-                      >
+                        className="inline-flex items-center justify-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-100 whitespace-nowrap">
+                         <span aria-hidden="true" className="text-sm leading-none">🗑️</span>
                         Delete
                       </button>
                     </div>

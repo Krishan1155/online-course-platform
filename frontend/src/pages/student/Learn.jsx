@@ -18,6 +18,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 
 
 
+
 // =====================================================
 
 // BACKEND URL
@@ -219,6 +220,7 @@ const Learn = () => {
   const [error, setError] = useState('');
 
   const [savingProgress, setSavingProgress] = useState(false);
+  const [loadingNextLesson, setLoadingNextLesson] = useState(false); // next video 
 
 
 
@@ -498,81 +500,68 @@ const Learn = () => {
 
 
 
-  const handleMarkComplete = async () => {
+  
+const handleMarkComplete = async () => {
+  if (!activeLesson || savingProgress) {
+    return;
+  }
 
-    if (!activeLesson || savingProgress) {
+  if (isLessonCompleted(activeLesson._id)) {
+    return;
+  }
 
-      return;
+  try {
+    setSavingProgress(true);
+    setError('');
 
+    const { data } = await api.post(
+      `/progress/${courseId}/lesson/${activeLesson._id}/complete`
+    );
+
+    if (data.data) {
+      setProgress(data.data);
+    } else {
+      setProgress((prev) => ({
+        ...prev,
+        completedLessons: [
+          ...prev.completedLessons,
+          activeLesson._id,
+        ],
+      }));
     }
+  } catch (err) {
+    setError(
+      err.response?.data?.message ||
+        err.message ||
+        'Failed to update progress'
+    );
+
+    throw err;
+  } finally {
+    setSavingProgress(false);
+  }
+};
 
 
+// AUTO-COMPLETE DOCUMENT LESSON AFTER 9 SECONDS
+useEffect(() => {
+  if (!activeLesson || savingProgress) return;
 
-    if (isLessonCompleted(activeLesson._id)) {
+  if (
+    activeLesson.contentType !== 'document' ||
+    isLessonCompleted(activeLesson._id)
+  ) {
+    return;
+  }
 
-      return;
+  const timer = setTimeout(() => {
+    handleMarkComplete().catch((err) => {
+      console.error('Failed to complete document lesson:', err);
+    });
+  },9000);
 
-    }
-
-
-
-    try {
-
-      setSavingProgress(true);
-
-      setError('');
-
-
-
-      const { data } = await api.post(
-
-        `/progress/${courseId}/lesson/${activeLesson._id}/complete`
-
-      );
-
-
-
-      if (data.data) {
-
-        setProgress(data.data);
-
-      } else {
-
-        setProgress((prev) => ({
-
-          ...prev,
-
-          completedLessons: [
-
-            ...prev.completedLessons,
-
-            activeLesson._id,
-
-          ],
-
-        }));
-
-      }
-
-    } catch (err) {
-
-      setError(
-
-        err.response?.data?.message ||
-
-          err.message ||
-
-          'Failed to update progress'
-
-      );
-
-    } finally {
-
-      setSavingProgress(false);
-
-    }
-
-  };
+  return () => clearTimeout(timer);
+}, [activeLesson, progress.completedLessons, savingProgress]);
 
 
 
@@ -625,18 +614,14 @@ const Learn = () => {
         />
 
 
+<Link
+  to="/my-courses"
+  className="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-600 shadow-sm transition-colors duration-200 hover:bg-indigo-100"
+>
+  <span aria-hidden="true">←</span>
+  My Courses
+</Link>
 
-        <Link
-
-          to="/my-courses"
-
-          className="mt-4 inline-block text-primary-600 hover:underline"
-
-        >
-
-          ← Back to My Courses
-
-        </Link>
 
       </div>
 
@@ -821,17 +806,15 @@ const Learn = () => {
 
           <div>
 
-            <Link
+          
+<Link
+  to="/my-courses"
+  className="mb-3 inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-100 px-4 py-2 text-sm font-semibold text-indigo-600 shadow-sm transition-colors duration-200 hover:bg-indigo-100"
+>
+  <span aria-hidden="true">←</span>
+  My Courses
+</Link>
 
-              to="/my-courses"
-
-              className="text-sm text-primary-600 hover:underline"
-
-            >
-
-              ← My Courses
-
-            </Link>
 
 
 
@@ -965,13 +948,23 @@ const Learn = () => {
 
                   ) : (
 
-                    <video
-                      src={activeLesson.videoPlaybackUrl || getBackendUrl(activeLesson.videoUrl)}
-                      controls
+                    
 
-                      className="h-full w-full"
 
-                    />
+<video
+  key={activeLesson._id}
+  src={
+    activeLesson.videoPlaybackUrl ||
+    getBackendUrl(activeLesson.videoUrl)
+  }
+  controls
+  preload="metadata"
+  className="h-full w-full"
+  onEnded={handleMarkComplete}
+/>
+
+
+
 
                   )}
 
@@ -1254,48 +1247,6 @@ const Learn = () => {
                     </span>
 
                   )}
-
-                </div>
-
-
-
-                {/* MARK COMPLETE */}
-
-
-
-                <div className="mt-6 border-t pt-5">
-
-                  <button
-
-                    type="button"
-
-                    onClick={handleMarkComplete}
-
-                    disabled={completed || savingProgress}
-
-                    className={`rounded-lg px-5 py-3 font-medium ${
-
-                      completed
-
-                        ? 'cursor-default bg-green-100 text-green-700'
-
-                        : 'btn-primary'
-
-                    }`}
-
-                  >
-
-                    {completed
-
-                      ? '✓ Lesson Completed'
-
-                      : savingProgress
-
-                      ? 'Saving...'
-
-                      : 'Mark as Complete'}
-
-                  </button>
 
                 </div>
 
