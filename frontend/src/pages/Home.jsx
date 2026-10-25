@@ -5,6 +5,7 @@ import CourseCard from '../components/CourseCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import TargetCursor from '../components/TargetCursor';
 import heroVisual from './hero-visual.png';
+import SpecularButton from '../components/SpecularButton';
 
 /* ---------- small inline icons ---------- */
 const Icon = ({ children, className = 'h-5 w-5' }) => (
@@ -113,9 +114,9 @@ const Home = () => {
           <h1 className="text-[clamp(2.5rem,11vw,3.75rem)] font-extrabold leading-[1.05] tracking-[-0.03em] text-[#0f0b2e] lg:text-[4.3vw]">
             Learn new skills.
             <br />
-            <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 bg-clip-text text-transparent">
-              Build your future.
-            </span>
+            <span className="text-indigo-600">
+  Build your future.
+</span>
           </h1>
 
           <p className="mt-5 max-w-md text-base leading-relaxed text-slate-600 lg:mt-[1.8vw] lg:max-w-[34vw] lg:text-[max(15px,1.25vw)] lg:leading-[1.6]">
@@ -124,24 +125,48 @@ const Home = () => {
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-4 lg:mt-[2.4vw] lg:gap-[1.2vw]">
-            <button
-              onClick={() => navigate('/courses')}
-              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3.5 font-semibold text-white shadow-lg shadow-indigo-300/60 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 lg:gap-[0.7vw] lg:rounded-[0.8vw] lg:px-[2.2vw] lg:py-[1.1vw] lg:text-[max(14px,1.2vw)]"
-            >
-              <BookIcon className="h-5 w-5 lg:h-[1.4vw] lg:w-[1.4vw]" />
-              Explore Courses
-              <span aria-hidden="true">→</span>
-            </button>
+  <SpecularButton
+  size="lg"
+  radius={12}
+  tint="#ffffff"
+  tintOpacity={0.12}
+  textColor="#ffffff"
+  lineColor="#ffffff"
+  baseColor="#4f46e5"
+  intensity={1}
+  idleIntensity={0.35}
+  shineSize={10}
+  shineFade={34}
+  thickness={1.2}
+  glow={1}
+  followMouse
+  proximity={250}
+  onClick={() => navigate('/courses')}
+>
+  Explore Courses →
+</SpecularButton>
 
-            <button
-              onClick={() => navigate('/register')}
-              className="inline-flex items-center gap-2 rounded-xl border border-indigo-300 bg-white/70 px-6 py-3.5 font-semibold text-indigo-700 transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 lg:gap-[0.7vw] lg:rounded-[0.8vw] lg:px-[2.2vw] lg:py-[1.1vw] lg:text-[max(14px,1.2vw)]"
-            >
-              <PlayIcon className="h-5 w-5 text-indigo-600 lg:h-[1.4vw] lg:w-[1.4vw]" />
-              Get Started Free
-            </button>
-          </div>
-
+  <SpecularButton
+  size="lg"
+  radius={12}
+  tint="#ffffff"
+  tintOpacity={0.12}
+  textColor="#4f46e5"
+  lineColor="#c7d2fe"
+  baseColor="#ffffff"
+  intensity={0.7}
+  idleIntensity={0.2}
+  shineSize={10}
+  shineFade={34}
+  thickness={1.2}
+  glow={0.5}
+  followMouse
+  proximity={250}
+  onClick={() => navigate('/register')}
+>
+  Get Started Free
+</SpecularButton>
+</div>
           <ul className="mt-9 grid gap-5 sm:grid-cols-3 lg:mt-[2.6vw] lg:flex lg:gap-[2vw]">
             {features.map(({ icon: FeatureIcon, title, text }) => (
               <li key={title} className="flex items-center gap-3 lg:gap-[0.9vw]">
