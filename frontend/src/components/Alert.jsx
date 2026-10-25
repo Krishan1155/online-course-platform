@@ -1,3 +1,6 @@
+
+import { useEffect } from 'react';
+
 const Alert = ({ type = 'info', message, onClose }) => {
   const styles = {
     info: 'bg-blue-50 text-blue-800 border-blue-200',
@@ -6,14 +9,30 @@ const Alert = ({ type = 'info', message, onClose }) => {
     warning: 'bg-yellow-50 text-yellow-800 border-yellow-200',
   };
 
+  useEffect(() => {
+    if (!message || type !== 'success' || !onClose) return;
+
+    const timer = setTimeout(() => {
+      onClose();
+    }, 3500);
+
+    return () => clearTimeout(timer);
+  }, [message, type, onClose]);
+
   if (!message) return null;
 
   return (
     <div className={`mb-4 rounded-lg border px-4 py-3 text-sm ${styles[type]}`}>
       <div className="flex items-start justify-between gap-2">
         <span>{message}</span>
+
         {onClose && (
-          <button onClick={onClose} className="font-bold hover:opacity-70" aria-label="Close">
+          <button
+            type="button"
+            onClick={onClose}
+            className="font-bold hover:opacity-70"
+            aria-label="Close"
+          >
             ×
           </button>
         )}

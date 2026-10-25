@@ -4,6 +4,9 @@ import api from '../../api/axios';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { formatPrice, getImageUrl } from '../../utils/helpers';
 
+import { FaTrashAlt } from 'react-icons/fa';
+import { FaEdit } from 'react-icons/fa';
+
 const AdminCourses = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -66,8 +69,8 @@ const AdminCourses = () => {
 
       {/* Table */}
       <div className="w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-  <div className="w-full overflow-x-auto">
-    <table className="w-full table-auto divide-y divide-gray-200">
+        <div className="w-full overflow-x-auto">
+          <table className="w-full table-auto divide-y divide-gray-200">
             <colgroup>
               <col className="w-[43%]" />
               <col className="w-[17%]" />
@@ -91,8 +94,8 @@ const AdminCourses = () => {
                   Status
                 </th>
                 <th className="w-[170px] px-2 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
-                 Actions
-                 </th>
+                  Actions
+                </th>
               </tr>
             </thead>
 
@@ -129,18 +132,16 @@ const AdminCourses = () => {
                   {/* Status */}
                   <td className="px-4 py-4 text-center">
                     <span
-                      className={`inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${
-                        course.isPublished
-                          ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
-                          : 'bg-amber-50 text-amber-700 ring-amber-200'
-                      }`}
+                      className={`inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${course.isPublished
+                        ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+                        : 'bg-amber-50 text-amber-700 ring-amber-200'
+                        }`}
                     >
                       <span
-                        className={`h-1.5 w-1.5 rounded-full ${
-                          course.isPublished
-                            ? 'bg-emerald-500'
-                            : 'bg-amber-500'
-                        }`}
+                        className={`h-1.5 w-1.5 rounded-full ${course.isPublished
+                          ? 'bg-emerald-500'
+                          : 'bg-amber-500'
+                          }`}
                       />
                       {course.isPublished ? 'Published' : 'Draft'}
                     </span>
@@ -148,23 +149,25 @@ const AdminCourses = () => {
 
                   {/* Actions */}
                   <td className="w-[170px] whitespace-nowrap px-2 py-4">
-                     <div className="flex items-center justify-center gap-1.5">
+                    <div className="flex items-center justify-center gap-1.5">
 
                       <Link
                         to={`/admin/courses/edit/${course._id}`}
                         aria-label={`Edit ${course.title}`}
-                        className="inline-flex items-center justify-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-xs font-semibold text-indigo-600 transition-colors hover:bg-indigo-100 whitespace-nowrap">
-                        <span aria-hidden="true">✎</span>
+                        title="Edit course"
+                        className="inline-flex items-center justify-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-xs font-semibold text-indigo-600 transition-colors hover:bg-indigo-100 whitespace-nowrap"
+                      >
+                        <FaEdit size={14} aria-hidden="true" />
                         Edit
                       </Link>
 
                       <button
-                        type="button"
-                        onClick={() => handleDelete(course._id, course.title)}
-                        aria-label={`Delete ${course.title}`}
-                        className="inline-flex items-center justify-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-100 whitespace-nowrap">
-                         <span aria-hidden="true" className="text-sm leading-none">🗑️</span>
-                        Delete
+                        onClick={() => handleDelete(course._id)}
+                        className="inline-flex items-center justify-center rounded-lg border border-red-200 px-3 py-2 text-red-600 transition hover:bg-red-50"
+                        aria-label="Delete course"
+                        title="Delete course"
+                      >
+                        <FaTrashAlt size={14} />
                       </button>
                     </div>
                   </td>
