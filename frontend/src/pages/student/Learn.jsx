@@ -1,4 +1,4 @@
-import { useEffect, useState,useRef} from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 import { Link, useParams } from 'react-router-dom';
 
@@ -321,9 +321,9 @@ const Learn = () => {
 
         err.response?.data?.message ||
 
-          err.message ||
+        err.message ||
 
-          'Failed to load course content'
+        'Failed to load course content'
 
       );
 
@@ -356,41 +356,41 @@ const Learn = () => {
 
 
   // Load saved playback position whenever the selected lesson changes
-useEffect(() => {
-  if (!courseId || !activeLesson?._id) return;
+  useEffect(() => {
+    if (!courseId || !activeLesson?._id) return;
 
-  let cancelled = false;
+    let cancelled = false;
 
-  const loadPlaybackPosition = async () => {
-    setSavedPlaybackPosition(0);
-    lastSavedTimeRef.current = 0;
+    const loadPlaybackPosition = async () => {
+      setSavedPlaybackPosition(0);
+      lastSavedTimeRef.current = 0;
 
-    try {
-      const { data } = await api.get(
-        `/progress/${courseId}?lessonId=${activeLesson._id}`
-      );
-
-      if (!cancelled) {
-        const position = Number(
-          data.data?.lastPlaybackPosition || 0
+      try {
+        const { data } = await api.get(
+          `/progress/${courseId}?lessonId=${activeLesson._id}`
         );
 
-        setSavedPlaybackPosition(position);
-        lastSavedTimeRef.current = position;
-      }
-    } catch (err) {
-      if (!cancelled) {
-        setSavedPlaybackPosition(0);
-      }
-    }
-  };
+        if (!cancelled) {
+          const position = Number(
+            data.data?.lastPlaybackPosition || 0
+          );
 
-  loadPlaybackPosition();
+          setSavedPlaybackPosition(position);
+          lastSavedTimeRef.current = position;
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setSavedPlaybackPosition(0);
+        }
+      }
+    };
 
-  return () => {
-    cancelled = true;
-  };
-}, [courseId, activeLesson?._id]);
+    loadPlaybackPosition();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [courseId, activeLesson?._id]);
 
   // ===================================================
 
@@ -504,9 +504,9 @@ useEffect(() => {
 
         err.response?.data?.message ||
 
-          err.message ||
+        err.message ||
 
-          'Failed to update progress'
+        'Failed to update progress'
 
       );
 
@@ -613,17 +613,17 @@ useEffect(() => {
   const remainingMinutes = totalDurationMinutes % 60;
 
   const courseRating =
-  course?.ratingAverage ??
-  course?.averageRating ??
-  course?.rating ??
-  course?.ratingsAverage ??
-  null;
+    course?.ratingAverage ??
+    course?.averageRating ??
+    course?.rating ??
+    course?.ratingsAverage ??
+    null;
 
-const ratingCount =
-  course?.ratingCount ??
-  course?.ratingsCount ??
-  course?.numReviews ??
-  null;
+  const ratingCount =
+    course?.ratingCount ??
+    course?.ratingsCount ??
+    course?.numReviews ??
+    null;
 
   // ===================================================
 
@@ -807,7 +807,7 @@ const ratingCount =
 
                   {activeLesson.videoUrl?.includes('youtube') ||
 
-                  activeLesson.videoUrl?.includes('youtu.be') ? (
+                    activeLesson.videoUrl?.includes('youtu.be') ? (
 
                     <iframe
 
@@ -831,53 +831,53 @@ const ratingCount =
 
                       controls
 
-                       onEnded={() => handleMarkComplete()}
+                      onEnded={() => handleMarkComplete()}
 
                       className="h-full w-full"
 
                       onLoadedMetadata={(e) => {
-  const video = e.currentTarget;
+                        const video = e.currentTarget;
 
-  if (
-    savedPlaybackPosition > 0 &&
-    savedPlaybackPosition < video.duration
-  ) {
-    video.currentTime = savedPlaybackPosition;
-  }
-}}
+                        if (
+                          savedPlaybackPosition > 0 &&
+                          savedPlaybackPosition < video.duration
+                        ) {
+                          video.currentTime = savedPlaybackPosition;
+                        }
+                      }}
 
-onTimeUpdate={async (e) => {
-  const video = e.currentTarget;
-  const currentTime = Math.floor(video.currentTime);
+                      onTimeUpdate={async (e) => {
+                        const video = e.currentTarget;
+                        const currentTime = Math.floor(video.currentTime);
 
-  if (currentTime - lastSavedTimeRef.current >= 5) {
-    lastSavedTimeRef.current = currentTime;
+                        if (Math.abs(currentTime - lastSavedTimeRef.current) >= 5) {
+                          lastSavedTimeRef.current = currentTime;
 
-    try {
-      await api.put(
-        `/progress/${courseId}/lesson/${activeLesson._id}/playback`,
-        { currentTime }
-      );
-    } catch (err) {
-      console.error('Failed to save playback position:', err);
-    }
-  }
-}}
+                          try {
+                            await api.put(
+                              `/progress/${courseId}/lesson/${activeLesson._id}/playback`,
+                              { currentTime }
+                            );
+                          } catch (err) {
+                            console.error('Failed to save playback position:', err);
+                          }
+                        }
+                      }}
 
-onPause={async (e) => {
-  const currentTime = Math.floor(e.currentTarget.currentTime);
+                      onPause={async (e) => {
+                        const currentTime = Math.floor(e.currentTarget.currentTime);
 
-  lastSavedTimeRef.current = currentTime;
+                        lastSavedTimeRef.current = currentTime;
 
-  try {
-    await api.put(
-      `/progress/${courseId}/lesson/${activeLesson._id}/playback`,
-      { currentTime }
-    );
-  } catch (err) {
-    console.error('Failed to save playback position:', err);
-  }
-}}
+                        try {
+                          await api.put(
+                            `/progress/${courseId}/lesson/${activeLesson._id}/playback`,
+                            { currentTime }
+                          );
+                        } catch (err) {
+                          console.error('Failed to save playback position:', err);
+                        }
+                      }}
 
                     />
 
@@ -1073,73 +1073,73 @@ onPause={async (e) => {
 
             {/* Course overview below the player, like the reference */}
 
-            
-{/* Course information below the video */}
-<section className="border-b border-gray-200 bg-white px-5 py-7 sm:px-8">
 
-  {/* Course Title */}
-  <h2 className="text-2xl font-bold leading-tight tracking-tight text-[#2d2f31] sm:text-3xl">
-    {course?.title || 'Course Title'}
-  </h2>
+            {/* Course information below the video */}
+            <section className="border-b border-gray-200 bg-white px-5 py-7 sm:px-8">
 
-  
-{/* Rating, Students, and Duration */}
-<div className="mt-5 flex flex-wrap items-start gap-x-10 gap-y-4 border-b border-gray-200 pb-6">
-
-  {/* Rating */}
-  <div>
-    <div className="flex items-center gap-2">
-      <span className="text-lg font-bold text-[#b4690e]">
-        {courseRating == null
-          ? 'New'
-          : Number(courseRating).toFixed(1)}
-      </span>
-      {courseRating != null && (
-        <span className="text-lg text-[#b4690e]">★</span>
-      )}
-    </div>
-    <p className="mt-1 text-sm text-[#6a6f73]">
-      {ratingCount == null ? 'No ratings yet' : `${Number(ratingCount).toLocaleString()} ratings`}
-    </p>
-  </div>
+              {/* Course Title */}
+              <h2 className="text-2xl font-bold leading-tight tracking-tight text-[#2d2f31] sm:text-3xl">
+                {course?.title || 'Course Title'}
+              </h2>
 
 
-  {/* Duration */}
-  <div>
-    <p className="text-lg font-bold text-[#2d2f31]">
-      {totalHours > 0
-        ? `${totalHours}.${String(Math.round(remainingMinutes / 60 * 10)).padStart(1, '0')} hours`
-        : `${totalDurationMinutes} min`}
-    </p>
-    <p className="mt-1 text-sm text-[#6a6f73]">Total</p>
-  </div>
+              {/* Rating, Students, and Duration */}
+              <div className="mt-5 flex flex-wrap items-start gap-x-10 gap-y-4 border-b border-gray-200 pb-6">
 
-</div>
+                {/* Rating */}
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold text-[#b4690e]">
+                      {courseRating == null
+                        ? 'New'
+                        : Number(courseRating).toFixed(1)}
+                    </span>
+                    {courseRating != null && (
+                      <span className="text-lg text-[#b4690e]">★</span>
+                    )}
+                  </div>
+                  <p className="mt-1 text-sm text-[#6a6f73]">
+                    {ratingCount == null ? 'No ratings yet' : `${Number(ratingCount).toLocaleString()} ratings`}
+                  </p>
+                </div>
 
 
-  {/* About the Course */}
-  <div className="mt-7">
-    <h3 className="text-xl font-bold text-[#2d2f31]">
-      About the course
-    </h3>
+                {/* Duration */}
+                <div>
+                  <p className="text-lg font-bold text-[#2d2f31]">
+                    {totalHours > 0
+                      ? `${totalHours}.${String(Math.round(remainingMinutes / 60 * 10)).padStart(1, '0')} hours`
+                      : `${totalDurationMinutes} min`}
+                  </p>
+                  <p className="mt-1 text-sm text-[#6a6f73]">Total</p>
+                </div>
 
-    <p className="mt-3 whitespace-pre-line text-sm leading-7 text-[#2d2f31]">
-      {course?.description || 'No course description available.'}
-    </p>
-  </div>
+              </div>
 
-  {/* Instructor */}
-  <div className="mt-7">
-    <h3 className="text-xl font-bold text-[#2d2f31]">
-      Instructor
-    </h3>
 
-    <p className="mt-3 text-base font-semibold text-[#5624d0]">
-      {course?.instructor || 'Instructor not specified'}
-    </p>
-  </div>
+              {/* About the Course */}
+              <div className="mt-7">
+                <h3 className="text-xl font-bold text-[#2d2f31]">
+                  About the course
+                </h3>
 
-</section>
+                <p className="mt-3 whitespace-pre-line text-sm leading-7 text-[#2d2f31]">
+                  {course?.description || 'No course description available.'}
+                </p>
+              </div>
+
+              {/* Instructor */}
+              <div className="mt-7">
+                <h3 className="text-xl font-bold text-[#2d2f31]">
+                  Instructor
+                </h3>
+
+                <p className="mt-3 text-base font-semibold text-[#5624d0]">
+                  {course?.instructor || 'Instructor not specified'}
+                </p>
+              </div>
+
+            </section>
 
 
             {/* Footer is inside the left scroll area only */}
@@ -1240,21 +1240,17 @@ onPause={async (e) => {
 
                       aria-expanded={isExpanded}
 
-                      className={`flex w-full items-start gap-3 px-5 py-4 text-left transition ${
+                      className={`flex w-full items-start gap-3 px-5 py-4 text-left transition ${isExpanded ? 'bg-gray-50' : 'bg-white hover:bg-gray-50'
 
-                        isExpanded ? 'bg-gray-50' : 'bg-white hover:bg-gray-50'
-
-                      }`}
+                        }`}
 
                     >
 
                       <svg
 
-                        className={`mt-0.5 h-4 w-4 shrink-0 text-slate-600 transition-transform ${
+                        className={`mt-0.5 h-4 w-4 shrink-0 text-slate-600 transition-transform ${isExpanded ? 'rotate-180' : ''
 
-                          isExpanded ? 'rotate-180' : ''
-
-                        }`}
+                          }`}
 
                         viewBox="0 0 24 24"
 
@@ -1310,15 +1306,13 @@ onPause={async (e) => {
 
                               onClick={() => handleSelectLesson(lesson, module._id)}
 
-                              className={`flex w-full items-start gap-3 px-5 py-3 text-left transition ${
-
-                                isActive
+                              className={`flex w-full items-start gap-3 px-5 py-3 text-left transition ${isActive
 
                                   ? 'bg-primary-50 text-primary-800'
 
                                   : 'text-slate-700 hover:bg-gray-50'
 
-                              }`}
+                                }`}
 
                             >
 
