@@ -220,7 +220,8 @@ const Learn = () => {
   const [error, setError] = useState('');
 
   const [savingProgress, setSavingProgress] = useState(false);
-  const [loadingNextLesson, setLoadingNextLesson] = useState(false); // next video 
+
+  const [savedPlaybackPosition, setSavedPlaybackPosition] = useState(0);
 
 
 
@@ -358,7 +359,23 @@ const Learn = () => {
 
 
 
-      setActiveLesson(firstLesson);
+     setSavedPlaybackPosition(0);
+
+if (firstLesson?._id) {
+  try {
+    const { data: playbackData } = await api.get(
+      `/progress/${courseId}?lessonId=${firstLesson._id}`
+    );
+
+    setSavedPlaybackPosition(
+      playbackData.data?.lastPlaybackPosition || 0
+    );
+  } catch (err) {
+    console.error('Failed to load playback position:', err);
+  }
+}
+
+setActiveLesson(firstLesson);
 
 
 
@@ -539,6 +556,21 @@ const handleMarkComplete = async () => {
     throw err;
   } finally {
     setSavingProgress(false);
+  }
+};
+
+
+// This function sends the current video time to your new backend endpoint.
+const saveVideoPosition = async (currentTime) => {
+  if (!activeLesson || !courseId) return;
+
+  try {
+    await api.put(
+      `/progress/${courseId}/lesson/${activeLesson._id}/playback`,
+      { currentTime }
+    );
+  } catch (err) {
+    console.error('Failed to save video position:', err);
   }
 };
 
@@ -960,7 +992,22 @@ useEffect(() => {
   controls
   preload="metadata"
   className="h-full w-full"
-  onEnded={handleMarkComplete}
+  onLoadedMetadata={(e) => {           // This tells the browser to seek to the saved timestamp once the video metadata is available.
+  if (savedPlaybackPosition > 0) {
+    e.currentTarget.currentTime = savedPlaybackPosition;
+  }
+}}
+  onTimeUpdate={(e) => {        // onTimeUpdate: saves the position approximately every five seconds.
+    const currentTime = e.currentTarget.currentTime;
+
+    if (Math.floor(currentTime) % 5 === 0) {
+      saveVideoPosition(currentTime);
+    }
+  }}
+  onPause={(e) => {            // onPause: saves the current position when the student pauses or leaves the video player.
+    saveVideoPosition(e.currentTarget.currentTime);
+  }}
+  onEnded={handleMarkComplete}  // onEnded: preserves your existing automatic lesson completion.
 />
 
 

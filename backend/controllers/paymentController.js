@@ -161,17 +161,50 @@ export const getAllPayments = asyncHandler(async (req, res) => {
 });
 
 export const getRevenueStats = asyncHandler(async (req, res) => {
-  const paidPayments = await Payment.find({ status: 'paid' });
+  // 1. Get overall revenue statistics.
+  const paidPayments = await Payment.find({ status: 'paid' })
+    .select('amount')
+    .lean();
 
-  const totalRevenue = paidPayments.reduce((sum, p) => sum + p.amount, 0);
+  const totalRevenue = paidPayments.reduce(
+    (sum, payment) => sum + payment.amount,
+    0
+  );
+
   const totalTransactions = paidPayments.length;
 
-  const enrollments = await Enrollment.countDocuments();
-  const users = await (await import('../models/User.js')).default.countDocuments();
-  const courses = await Course.countDocuments();
+  // 2. Get platform statistics.
+  const User = (await import('../models/User.js')).default;
 
-  const monthlyRevenue = await Payment.aggregate([
-    { $match: { status: 'paid' } },
+  const [totalEnrollments, totalUsers, totalCourses] =
+    await Promise.all([
+      Enrollment.countDocuments(),
+      User.countDocuments(),
+      Course.countDocuments(),
+    ]);
+
+  // 3. Calculate the last six calendar months.
+  // Includes the current month and the previous five months.
+  const now = new Date();
+
+  const currentYear = now.getUTCFullYear();
+  const currentMonth = now.getUTCMonth() + 1;
+
+  const startDate = new Date(
+    Date.UTC(currentYear, currentMonth - 6, 1)
+  );
+
+  // 4. Aggregate actual paid revenue for those months.
+  const aggregatedRevenue = await Payment.aggregate([
+    {
+      $match: {
+        status: 'paid',
+        createdAt: {
+          $gte: startDate,
+          $lte: now,
+        },
+      },
+    },
     {
       $group: {
         _id: {
@@ -182,29 +215,61 @@ export const getRevenueStats = asyncHandler(async (req, res) => {
         count: { $sum: 1 },
       },
     },
-    { $sort: { '_id.year': -1, '_id.month': -1 } },
-    { $limit: 12 },
   ]);
 
-  //  Get latest 10 payments
+  // 5. Index the actual results by year and month.
+  const revenueMap = new Map(
+    aggregatedRevenue.map((item) => [
+      `${item._id.year}-${item._id.month}`,
+      item,
+    ])
+  );
+
+  // 6. Generate six consecutive months, including months
+  // with no paid transactions.
+  const monthlyRevenue = [];
+
+  for (let i = 5; i >= 0; i--) {
+    const date = new Date(
+      Date.UTC(currentYear, currentMonth - 1 - i, 1)
+    );
+
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth() + 1;
+
+    const key = `${year}-${month}`;
+    const existing = revenueMap.get(key);
+
+    monthlyRevenue.push({
+      _id: {
+        year,
+        month,
+      },
+      revenue: existing?.revenue ?? 0,
+      count: existing?.count ?? 0,
+    });
+  }
+
+  // 7. Get the ten most recent paid payments.
   const recentPayments = await Payment.find({
-    status: 'paid'
+    status: 'paid',
   })
     .populate('user', 'name email')
     .populate('course', 'title')
     .sort({ createdAt: -1 })
     .limit(10);
 
+  // 8. Send the response.
   res.json({
     success: true,
     data: {
       totalRevenue,
       totalTransactions,
-      totalEnrollments: enrollments,
-      totalUsers: users,
-      totalCourses: courses,
+      totalEnrollments,
+      totalUsers,
+      totalCourses,
       monthlyRevenue,
-      recentPayments
+      recentPayments,
     },
   });
 });
