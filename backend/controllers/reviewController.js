@@ -3,9 +3,8 @@ import Review from '../models/Review.js';
 import Course from '../models/Course.js';
 import Enrollment from '../models/Enrollment.js';
 
-// =====================================================
-// UPDATE COURSE RATING STATISTICS
-// =====================================================
+
+// ---> Update Course Rating Statistics 
 
 const updateCourseRating = async (courseId) => {
   const reviews = await Review.find({
@@ -30,14 +29,9 @@ const updateCourseRating = async (courseId) => {
     return;
   }
 
-  const totalRating = reviews.reduce(
-    (sum, review) => sum + review.rating,
-    0
-  );
+  const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
 
-  const ratingAverage = Number(
-    (totalRating / ratingCount).toFixed(1)
-  );
+  const ratingAverage = Number((totalRating / ratingCount).toFixed(1));
 
   const ratingDistribution = {
     five: reviews.filter((review) => review.rating === 5).length,
@@ -54,17 +48,17 @@ const updateCourseRating = async (courseId) => {
   });
 };
 
-// =====================================================
-// GET COURSE REVIEWS
-// PUBLIC
-// =====================================================
+// -----> Get Course Review
+// Public
+
 
 export const getCourseReviews = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
 
   const course = await Course.findById(courseId).select('_id');
 
-  if (!course) {
+  if (!course) 
+  {
     res.status(404);
     throw new Error('Course not found');
   }
@@ -77,11 +71,10 @@ export const getCourseReviews = asyncHandler(async (req, res) => {
 
   let userReview = null;
 
-  if (req.user) {
+  if (req.user) 
+  {
     userReview = reviews.find(
-      (review) =>
-        review.user?._id?.toString() ===
-        req.user._id.toString()
+      (review) => review.user?._id?.toString() === req.user._id.toString()
     );
   }
 
@@ -93,10 +86,8 @@ export const getCourseReviews = asyncHandler(async (req, res) => {
     createdAt: review.createdAt,
     helpfulCount: review.helpfulBy.length,
     notHelpfulCount: review.notHelpfulBy.length,
-    isHelpful: req.user
-      ? review.helpfulBy.some(
-          (id) =>
-            id.toString() === req.user._id.toString()
+    isHelpful: req.user ? review.helpfulBy.some(
+          (id) => id.toString() === req.user._id.toString()
         )
       : false,
     isNotHelpful: req.user
@@ -123,10 +114,10 @@ export const getCourseReviews = asyncHandler(async (req, res) => {
   });
 });
 
-// =====================================================
-// CREATE REVIEW
-// ENROLLED STUDENTS ONLY
-// =====================================================
+
+// ----> Create Review
+// Enrolled Students Only
+
 
 export const createReview = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
@@ -134,7 +125,8 @@ export const createReview = asyncHandler(async (req, res) => {
 
   const course = await Course.findById(courseId);
 
-  if (!course) {
+  if (!course) 
+  {
     res.status(404);
     throw new Error('Course not found');
   }
@@ -144,11 +136,10 @@ export const createReview = asyncHandler(async (req, res) => {
     course: courseId,
   });
 
-  if (!enrollment) {
+  if (!enrollment) 
+  {
     res.status(403);
-    throw new Error(
-      'You must be enrolled in this course to write a review'
-    );
+    throw new Error('You must be enrolled in this course to write a review');
   }
 
   const existingReview = await Review.findOne({
@@ -201,13 +192,12 @@ export const createReview = asyncHandler(async (req, res) => {
   });
 });
 
-// =====================================================
-// UPDATE OWN REVIEW
-// =====================================================
+
+// -----> Update Own Review
 
 export const updateReview = asyncHandler(async (req, res) => {
-  const { reviewId } = req.params;
-  const { rating, comment } = req.body;
+  const {reviewId} = req.params;
+  const {rating,comment} = req.body;
 
   const review = await Review.findById(reviewId);
 
@@ -216,30 +206,22 @@ export const updateReview = asyncHandler(async (req, res) => {
     throw new Error('Review not found');
   }
 
-  if (
-    review.user.toString() !==
-    req.user._id.toString()
-  ) {
+  if (review.user.toString() !== req.user._id.toString()) 
+  {
     res.status(403);
-    throw new Error(
-      'You can only edit your own review'
-    );
+    throw new Error('You can only edit your own review');
   }
 
   const numericRating = Number(rating);
 
-  if (
-    !Number.isInteger(numericRating) ||
-    numericRating < 1 ||
-    numericRating > 5
-  ) {
+  if (!Number.isInteger(numericRating) || numericRating < 1 || numericRating > 5) 
+  {
     res.status(400);
-    throw new Error(
-      'Rating must be between 1 and 5'
-    );
+    throw new Error('Rating must be between 1 and 5');
   }
 
-  if (!comment || !comment.trim()) {
+  if (!comment || !comment.trim()) 
+  {
     res.status(400);
     throw new Error('Review comment is required');
   }
@@ -251,9 +233,7 @@ export const updateReview = asyncHandler(async (req, res) => {
 
   await updateCourseRating(review.course);
 
-  const updatedReview = await Review.findById(
-    review._id
-  ).populate('user', 'name');
+  const updatedReview = await Review.findById(review._id).populate('user', 'name');
 
   res.json({
     success: true,
@@ -262,28 +242,23 @@ export const updateReview = asyncHandler(async (req, res) => {
   });
 });
 
-// =====================================================
-// DELETE OWN REVIEW
-// =====================================================
+
+// ----> Delete Own Review
 
 export const deleteReview = asyncHandler(async (req, res) => {
   const { reviewId } = req.params;
 
   const review = await Review.findById(reviewId);
 
-  if (!review) {
+  if(!review) {
     res.status(404);
     throw new Error('Review not found');
   }
 
-  if (
-    review.user.toString() !==
-    req.user._id.toString()
-  ) {
+  if(review.user.toString() !== req.user._id.toString()) 
+  {
     res.status(403);
-    throw new Error(
-      'You can only delete your own review'
-    );
+    throw new Error('You can only delete your own review');
   }
 
   const courseId = review.course;
@@ -298,40 +273,39 @@ export const deleteReview = asyncHandler(async (req, res) => {
   });
 });
 
-// =====================================================
-// HELPFUL / NOT HELPFUL
-// =====================================================
 
-export const markReviewHelpful = asyncHandler(
+// Helpful / Not Helpful
+
+export const markReviewHelpful=asyncHandler(
   async (req, res) => {
-    const { reviewId } = req.params;
-    const { helpful } = req.body;
+    const {reviewId}=req.params;
+    const {helpful}=req.body;
 
-    const review = await Review.findById(reviewId);
+    const review=await Review.findById(reviewId);
 
-    if (!review) {
+    if(!review) 
+    {
       res.status(404);
       throw new Error('Review not found');
     }
 
-    const userId = req.user._id;
+    const userId=req.user._id;
 
     review.helpfulBy = review.helpfulBy.filter(
-      (id) =>
-        id.toString() !== userId.toString()
+      (id) => id.toString() !== userId.toString()
     );
 
-    review.notHelpfulBy =
-      review.notHelpfulBy.filter(
-        (id) =>
-          id.toString() !== userId.toString()
+    review.notHelpfulBy = review.notHelpfulBy.filter(
+        (id) => id.toString() !== userId.toString()
       );
 
-    if (helpful === true) {
+    if(helpful === true) 
+    {
       review.helpfulBy.push(userId);
     }
 
-    if (helpful === false) {
+    if(helpful === false) 
+    {
       review.notHelpfulBy.push(userId);
     }
 
@@ -341,8 +315,7 @@ export const markReviewHelpful = asyncHandler(
       success: true,
       data: {
         helpfulCount: review.helpfulBy.length,
-        notHelpfulCount:
-          review.notHelpfulBy.length,
+        notHelpfulCount: review.notHelpfulBy.length,
       },
     });
   }

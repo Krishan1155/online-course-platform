@@ -1308,9 +1308,9 @@ const Learn = () => {
 
                               className={`flex w-full items-start gap-3 px-5 py-3 text-left transition ${isActive
 
-                                  ? 'bg-primary-50 text-primary-800'
+                                ? 'bg-primary-50 text-primary-800'
 
-                                  : 'text-slate-700 hover:bg-gray-50'
+                                : 'text-slate-700 hover:bg-gray-50'
 
                                 }`}
 

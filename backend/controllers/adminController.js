@@ -4,26 +4,16 @@ import Enrollment from '../models/Enrollment.js';
 import Course from '../models/Course.js';
 import Payment from '../models/Payment.js';
 
+
+
 export const getAllUsers = asyncHandler(async (req, res) => {
-  const users = await User.find().select('-password').sort({ createdAt: -1 });
+  const users = await User.find()
+        .select('-password -resetPasswordToken -resetPasswordExpire')
+        .sort({ createdAt: -1 });
+        
   res.json({ success: true, count: users.length, data: users });
 });
 
-export const getUserById = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.id).select('-password');
-  if (!user) {
-    res.status(404);
-    throw new Error('User not found');
-  }
-
-  const enrollments = await Enrollment.find({ user: user._id }).populate('course', 'title');
-  const payments = await Payment.find({ user: user._id, status: 'paid' }).populate('course', 'title amount');
-
-  res.json({
-    success: true,
-    data: { user, enrollments, payments },
-  });
-});
 
 
 export const updateUserRole = asyncHandler(async (req, res) => {
@@ -66,21 +56,6 @@ export const updateUserRole = asyncHandler(async (req, res) => {
 });
 
 
-export const deleteUser = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.id);
-  if (!user) {
-    res.status(404);
-    throw new Error('User not found');
-  }
-
-  if (user._id.toString() === req.user._id.toString()) {
-    res.status(400);
-    throw new Error('Cannot delete your own account');
-  }
-
-  await user.deleteOne();
-  res.json({ success: true, message: 'User deleted successfully' });
-});
 
 export const getDashboardStats = asyncHandler(async (req, res) => {
   const totalUsers = await User.countDocuments();

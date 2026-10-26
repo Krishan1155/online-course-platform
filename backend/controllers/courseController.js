@@ -388,8 +388,7 @@ export const getAdminCourseById = asyncHandler(async (req, res) => {
   });
 });
 
-// =====================================================
-// EXPORT COURSE STATISTICS HELPER
-// =====================================================
+
+// --->EXPORT COURSE STATISTICS HELPER
 
 export { updateCourseStats };
