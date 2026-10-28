@@ -19,29 +19,32 @@ export const getAllUsers = asyncHandler(async (req, res) => {
 export const updateUserRole = asyncHandler(async (req, res) => {
   const { role } = req.body;
 
-  if (!['student', 'admin'].includes(role)) {
+  if (!['student', 'admin'].includes(role)) 
+  {
     res.status(400);
     throw new Error('Invalid role. Role must be student or admin.');
   }
 
   const user = await User.findById(req.params.id);
 
-  if (!user) {
+  if (!user) 
+  {
     res.status(404);
     throw new Error('User not found');
   }
 
-  // Prevent changing your own role.
-  if (user._id.toString() === req.user._id.toString()) {
+  // ----> Prevent changing your own role.
+  if (user._id.toString() === req.user._id.toString()) 
+  {
     res.status(400);
     throw new Error('You cannot change your own role.');
   }
 
-  // Protect the default admin account.
-  const defaultAdminEmail =
-    (process.env.ADMIN_EMAIL || 'admin@courseplatform.com').toLowerCase();
+  // -----> Protect the default admin account.
+  const defaultAdminEmail = (process.env.ADMIN_EMAIL || 'admin@courseplatform.com').toLowerCase();
 
-  if (user.email.toLowerCase() === defaultAdminEmail) {
+  if (user.email.toLowerCase() === defaultAdminEmail) 
+  {
     res.status(400);
     throw new Error('The default admin role cannot be changed.');
   }
@@ -87,7 +90,8 @@ export const createAdminUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
   const exists = await User.findOne({ email });
-  if (exists) {
+  if (exists) 
+  {
     res.status(400);
     throw new Error('User already exists');
   }

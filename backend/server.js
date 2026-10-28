@@ -7,10 +7,7 @@ import fs from 'fs';
 
 import connectDB from './config/db.js';
 
-import {
-  notFound,
-  errorHandler,
-} from './middleware/errorMiddleware.js';
+import {notFound,errorHandler} from './middleware/errorMiddleware.js';
 
 import authRoutes from './routes/authRoutes.js';
 import courseRoutes from './routes/courseRoutes.js';
@@ -25,36 +22,24 @@ import reviewRoutes from './routes/reviewRoutes.js';
 
 dotenv.config();
 
-// =====================================================
-// PATHS
-// =====================================================
 
-const __filename =
-  fileURLToPath(import.meta.url);
+//  ----> Paths
 
-const __dirname =
-  path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url);
 
-const uploadsDir =
-  path.join(__dirname, 'uploads');
+const __dirname = path.dirname(__filename);
 
-const paymentsUploadDir =
-  path.join(
-    uploadsDir,
-    'payments'
-  );
+const uploadsDir = path.join(__dirname, 'uploads');
 
-const documentsUploadDir =
-  path.join(
-    uploadsDir,
-    'documents'
-  );
+const paymentsUploadDir =path.join(uploadsDir,'payments');
 
-// =====================================================
+const documentsUploadDir = path.join(uploadsDir,'documents');
+
+
 // CREATE UPLOAD DIRECTORIES
-// =====================================================
 
-if (!fs.existsSync(uploadsDir)) {
+if (!fs.existsSync(uploadsDir)) 
+{
   fs.mkdirSync(
     uploadsDir,
     {
@@ -81,153 +66,88 @@ if (!fs.existsSync(documentsUploadDir)) {
   );
 }
 
-// =====================================================
-// DATABASE
-// =====================================================
+
+// ---> Database
+
 
 connectDB();
 
-// =====================================================
-// EXPRESS
-// =====================================================
+
+// ---> Express
+
 
 const app = express();
 
-// =====================================================
-// MIDDLEWARE
-// =====================================================
+// ----> Middleware
 
-app.use(
-  cors({
-    origin:
-      process.env.CLIENT_URL ||
-      'http://localhost:5173',
 
-    credentials: true,
-  })
-);
+app.use(cors({origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true}));
 
 app.use(express.json());
 
-app.use(
-  express.urlencoded({
-    extended: true,
-  })
-);
+app.use(express.urlencoded({extended: true}));
 
-// =====================================================
-// STATIC UPLOADS
-// =====================================================
 
-app.use(
-  '/uploads',
-  express.static(uploadsDir)
-);
+// ---> Static Uploads
 
-// =====================================================
-// HEALTH CHECK
-// =====================================================
+app.use('/uploads',express.static(uploadsDir));
 
-app.get(
-  '/api/health',
-  (req, res) => {
+
+// ---> Health Check
+
+app.get('/api/health',(req, res) => {
     res.json({
       success: true,
-      message:
-        'Course Platform API is running',
+      message: 'Course Platform API is running',
     });
   }
 );
 
-// =====================================================
-// ROUTES
-// =====================================================
 
-app.use(
-  '/api/auth',
-  authRoutes
-);
+// ---> Routes
 
-app.use(
-  '/api/courses',
-  courseRoutes
-);
+app.use('/api/auth',authRoutes);
 
-app.use(
-  '/api/modules',
-  moduleRoutes
-);
+app.use('/api/courses',courseRoutes);
 
-app.use(
-  '/api/lessons',
-  lessonRoutes
-);
+app.use('/api/modules',moduleRoutes);
 
-app.use(
-  '/api/enrollments',
-  enrollmentRoutes
-);
+app.use('/api/lessons',lessonRoutes);
 
-app.use(
-  '/api/progress',
-  progressRoutes
-);
+app.use('/api/enrollments',enrollmentRoutes);
 
-app.use(
-  '/api/payments',
-  paymentRoutes
-);
+app.use('/api/progress',progressRoutes);
 
-app.use(
-  '/api/admin',
-  adminRoutes
-);
+app.use('/api/payments',paymentRoutes);
 
-// COURSE REVIEWS
-app.use(
-  '/api/reviews',
-  reviewRoutes
-);
+app.use('/api/admin',adminRoutes);
 
-// =====================================================
-// ERROR HANDLING
-// =====================================================
+// ---> Course Review
+app.use('/api/reviews',reviewRoutes);
+
+
+// ---> Error Handling
 
 app.use(notFound);
 
 app.use(errorHandler);
 
-// =====================================================
-// SERVER
-// =====================================================
 
-const PORT =
-  process.env.PORT || 5001;
+// ---> Server
 
-const server =
-  app.listen(
-    PORT,
-    () => {
-      console.log(
-        `Server running on port ${PORT}`
-      );
+const PORT = process.env.PORT || 5001;
+
+const server = app.listen(PORT,() => {
+      console.log(`Server running on port ${PORT}`);
     }
   );
 
-server.on(
-  'error',
-  (error) => {
-    if (
-      error.code ===
-      'EADDRINUSE'
-    ) {
-      console.error(
-        `Port ${PORT} is already in use. Change PORT in backend/.env or stop the process using that port.`
-      );
-
+server.on('error',(error) => {
+    if(error.code === 'EADDRINUSE') 
+    {
+      console.error(`Port ${PORT} is already in use. Change PORT in backend/.env or stop the process using that port.`);
       process.exit(1);
     }
-
     throw error;
   }
 );

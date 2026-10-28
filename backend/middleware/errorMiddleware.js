@@ -8,7 +8,8 @@ const errorHandler = (err, req, res, next) => {
   let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
   let message = err.message;
 
-  if (err.name === 'CastError') {
+  if (err.name === 'CastError') 
+  {
     statusCode = 404;
     message = 'Resource not found';
   }
@@ -19,11 +20,10 @@ const errorHandler = (err, req, res, next) => {
     message = `${field} already exists`;
   }
 
-  if (err.name === 'ValidationError') {
+  if (err.name === 'ValidationError') 
+  {
     statusCode = 400;
-    message = Object.values(err.errors)
-      .map((val) => val.message)
-      .join(', ');
+    message = Object.values(err.errors).map((val) => val.message).join(', ');
   }
 
   res.status(statusCode).json({

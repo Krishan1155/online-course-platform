@@ -10,7 +10,9 @@ export const createModule = asyncHandler(async (req, res) => {
   const { title, order } = req.body;
 
   const course = await Course.findById(courseId);
-  if (!course) {
+  
+  if (!course) 
+  {
     res.status(404);
     throw new Error('Course not found');
   }
@@ -28,7 +30,8 @@ export const createModule = asyncHandler(async (req, res) => {
 export const updateModule = asyncHandler(async (req, res) => {
   let module = await Module.findById(req.params.id);
 
-  if (!module) {
+  if (!module) 
+  {
     res.status(404);
     throw new Error('Module not found');
   }
@@ -44,7 +47,8 @@ export const updateModule = asyncHandler(async (req, res) => {
 export const deleteModule = asyncHandler(async (req, res) => {
   const module = await Module.findById(req.params.id);
 
-  if (!module) {
+  if (!module) 
+  {
     res.status(404);
     throw new Error('Module not found');
   }
@@ -69,7 +73,8 @@ export const deleteModule = asyncHandler(async (req, res) => {
   ];
 
   // Delete S3 objects first
-  for (const key of s3Keys) {
+  for (const key of s3Keys) 
+  {
     await deleteFromS3(key);
   }
 

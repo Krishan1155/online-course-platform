@@ -8,10 +8,10 @@ export const isEmailConfigured = () => {
 };
 
 const sendEmail = async ({ email, subject, html }) => {
-  if (!isEmailConfigured()) {
-    throw new Error(
-      'Email is not configured. Check EMAIL_USER and EMAIL_PASS in .env'
-    );
+
+  if (!isEmailConfigured())
+  {
+    throw new Error('Email is not configured. Check EMAIL_USER and EMAIL_PASS in .env');
   }
 
   const transporter = nodemailer.createTransport({

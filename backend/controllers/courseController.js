@@ -7,9 +7,8 @@ import Review from '../models/Review.js';
 import { deleteS3Prefix } from '../utils/s3.js';
 import Progress from '../models/Progress.js';
 
-// =====================================================
-// UPDATE COURSE STATISTICS
-// =====================================================
+
+// Update  Course STATISTICS
 
 const updateCourseStats = async (courseId) => {
   const lessons = await Lesson.find({ course: courseId });
@@ -27,10 +26,8 @@ const updateCourseStats = async (courseId) => {
   });
 };
 
-// =====================================================
-// GET ALL PUBLISHED COURSES
-// =====================================================
 
+// Get All Published Courses
 export const getCourses = asyncHandler(async (req, res) => {
   const {
     search,
@@ -71,7 +68,8 @@ export const getCourses = asyncHandler(async (req, res) => {
     };
   }
 
-  if (maxPrice !== undefined && maxPrice !== '') {
+  if (maxPrice !== undefined && maxPrice !== '') 
+  {
     filter.price = {
       ...filter.price,
       $lte: Number(maxPrice),
@@ -80,11 +78,16 @@ export const getCourses = asyncHandler(async (req, res) => {
 
   let sortOption = { createdAt: -1 };
 
-  if (sort === 'price-asc') {
+  if (sort === 'price-asc') 
+  {
     sortOption = { price: 1, title: 1 };
-  } else if (sort === 'price-desc') {
+  } 
+  else if (sort === 'price-desc') 
+  {
     sortOption = { price: -1, title: 1 };
-  } else if (sort === 'title') {
+  } 
+  else if (sort === 'title') 
+  {
     sortOption = { title: 1 };
   }
 
@@ -94,22 +97,24 @@ export const getCourses = asyncHandler(async (req, res) => {
 
   let result = courses;
 
-  if (searchText) {
+  if (searchText) 
+  {
     const query = searchText.toLowerCase();
 
     const getRank = (course) => {
-      const title = (course.title || '').toLowerCase();
+    
+    const title = (course.title || '').toLowerCase();
 
-      if (title === query) return 0;
-      if (title.startsWith(query)) return 1;
-      if (title.includes(query)) return 2;
+    if (title === query) return 0;
+
+    if (title.startsWith(query)) return 1;
+
+    if (title.includes(query)) return 2;
 
       return 3;
     };
 
-    result = [...courses].sort(
-      (a, b) => getRank(a) - getRank(b)
-    );
+    result = [...courses].sort((a, b) => getRank(a) - getRank(b));
   }
 
   res.json({
@@ -119,21 +124,22 @@ export const getCourses = asyncHandler(async (req, res) => {
   });
 });
 
-// =====================================================
-// GET COURSE BY ID
-// =====================================================
+
+
+// ----> Get Course By Id
 
 export const getCourseById = asyncHandler(async (req, res) => {
   const course = await Course.findById(req.params.id)
     .populate('createdBy', 'name email');
 
-  if (!course) {
+  if (!course) 
+  {
     res.status(404);
     throw new Error('Course not found');
   }
 
-  if (!course.isPublished &&
-      (!req.user || req.user.role !== 'admin')) {
+  if (!course.isPublished && (!req.user || req.user.role !== 'admin')) 
+  {
     res.status(404);
     throw new Error('Course not found');
   }
@@ -157,7 +163,8 @@ export const getCourseById = asyncHandler(async (req, res) => {
 
   let isEnrolled = false;
 
-  if (req.user) {
+  if (req.user) 
+  {
     const enrollment = await Enrollment.findOne({
       user: req.user._id,
       course: course._id,
@@ -176,9 +183,8 @@ export const getCourseById = asyncHandler(async (req, res) => {
   });
 });
 
-// =====================================================
-// GET CATEGORIES
-// =====================================================
+
+// Get Categories
 
 export const getCategories = asyncHandler(async (req, res) => {
   const categories = await Course.distinct('category', {
@@ -191,9 +197,8 @@ export const getCategories = asyncHandler(async (req, res) => {
   });
 });
 
-// =====================================================
-// CREATE COURSE
-// =====================================================
+
+// ----> Create Course
 
 export const createCourse = asyncHandler(async (req, res) => {
   const {
@@ -218,7 +223,8 @@ export const createCourse = asyncHandler(async (req, res) => {
     createdBy: req.user._id,
   };
 
-  if (req.file) {
+  if (req.file) 
+  {
     courseData.thumbnail = `/uploads/${req.file.filename}`;
   }
 
@@ -230,14 +236,13 @@ export const createCourse = asyncHandler(async (req, res) => {
   });
 });
 
-// =====================================================
-// UPDATE COURSE
-// =====================================================
+// ---> Update Course
 
 export const updateCourse = asyncHandler(async (req, res) => {
   let course = await Course.findById(req.params.id);
 
-  if (!course) {
+  if (!course) 
+  {
     res.status(404);
     throw new Error('Course not found');
   }
@@ -259,12 +264,13 @@ export const updateCourse = asyncHandler(async (req, res) => {
   course.level = level ?? course.level;
   course.instructor = instructor ?? course.instructor;
 
-  if (isPublished !== undefined) {
-    course.isPublished =
-      isPublished === 'true' || isPublished === true;
+  if(isPublished !== undefined) 
+  {
+    course.isPublished = isPublished === 'true' || isPublished === true;
   }
 
-  if (req.file) {
+  if(req.file) 
+  {
     course.thumbnail = `/uploads/${req.file.filename}`;
   }
 
@@ -276,15 +282,14 @@ export const updateCourse = asyncHandler(async (req, res) => {
   });
 });
 
-// =====================================================
-// DELETE COURSE
-// =====================================================
 
+// ---> Delete Course
 
 export const deleteCourse = asyncHandler(async (req, res) => {
   const course = await Course.findById(req.params.id);
 
-  if (!course) {
+  if (!course) 
+  {
     res.status(404);
     throw new Error('Course not found');
   }
@@ -334,9 +339,7 @@ await deleteS3Prefix(`courses/${courseId}/`);
 });
 
 
-// =====================================================
-// GET ADMIN COURSES
-// =====================================================
+// Get Admin Courses
 
 export const getAdminCourses = asyncHandler(async (req, res) => {
   const courses = await Course.find()
@@ -350,14 +353,14 @@ export const getAdminCourses = asyncHandler(async (req, res) => {
   });
 });
 
-// =====================================================
-// GET ADMIN COURSE BY ID
-// =====================================================
+
+// ---> Get Admin Course By ID
 
 export const getAdminCourseById = asyncHandler(async (req, res) => {
   const course = await Course.findById(req.params.id);
 
-  if (!course) {
+  if (!course) 
+  {
     res.status(404);
     throw new Error('Course not found');
   }

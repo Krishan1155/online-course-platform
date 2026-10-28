@@ -12,8 +12,11 @@ const router = express.Router();
 router.use(protect, authorize('admin'));
 
 router.get('/dashboard', getDashboardStats);
+
 router.get('/users', getAllUsers);
+
 router.put('/users/:id/role', updateUserRole);
+
 router.post('/create-admin', createAdminUser);
 
 export default router;

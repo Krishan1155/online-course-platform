@@ -17,18 +17,21 @@ export const createOrder = asyncHandler(async (req, res) => {
   const { courseId } = req.body;
 
   const course = await Course.findById(courseId);
-  if (!course) {
+  if (!course) 
+  {
     res.status(404);
     throw new Error('Course not found');
   }
 
-  if (course.price <= 0) {
+  if (course.price <= 0) 
+  {
     res.status(400);
     throw new Error('This course is free. Use direct enrollment.');
   }
 
   const existing = await Enrollment.findOne({ user: req.user._id, course: courseId });
-  if (existing) {
+  if (existing) 
+  {
     res.status(400);
     throw new Error('Already enrolled in this course');
   }
@@ -81,24 +84,28 @@ export const verifyPayment = asyncHandler(async (req, res) => {
     .update(body)
     .digest('hex');
 
-  if (expectedSignature !== razorpay_signature) {
+  if (expectedSignature !== razorpay_signature) 
+  {
     res.status(400);
     throw new Error('Invalid payment signature');
   }
 
   const payment = await Payment.findById(paymentId);
 
-if (!payment) {
+if (!payment) 
+{
   res.status(404);
   throw new Error('Payment record not found');
 }
 
-if (payment.razorpayOrderId !== razorpay_order_id) {
+if (payment.razorpayOrderId !== razorpay_order_id) 
+{
   res.status(400);
   throw new Error('Order ID mismatch');
 }
 
-if (payment.status === 'paid') {
+if (payment.status === 'paid') 
+{
   res.status(400);
   throw new Error('Payment has already been verified');
 }
@@ -114,7 +121,8 @@ await payment.save();
     course: payment.course,
   });
 
-  if (!existingEnrollment) {
+  if (!existingEnrollment) 
+  {
     const enrollment = await Enrollment.create({
       user: payment.user,
       course: payment.course,

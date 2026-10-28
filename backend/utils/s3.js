@@ -17,10 +17,9 @@ import { stat } from 'node:fs/promises';
 
 const bucket = process.env.AWS_S3_BUCKET_NAME;
 
-if (!process.env.AWS_REGION || !bucket) {
-  throw new Error(
-    'Missing AWS_REGION or AWS_S3_BUCKET_NAME in .env'
-  );
+if (!process.env.AWS_REGION || !bucket) 
+{
+  throw new Error('Missing AWS_REGION or AWS_S3_BUCKET_NAME in .env');
 }
 
 export const s3 = new S3Client({
@@ -52,6 +51,7 @@ export const uploadToS3 = async ({
 };
 
 export const deleteFromS3 = async (key) => {
+
   if (!key) return;
 
   await s3.send(
@@ -63,6 +63,7 @@ export const deleteFromS3 = async (key) => {
 };
 
 export const createSignedMediaUrl = async (key) => {
+
   if (!key) return '';
 
   return getSignedUrl(
@@ -77,7 +78,9 @@ export const createSignedMediaUrl = async (key) => {
 
 
 export const deleteS3Prefix = async (prefix) => {
-  if (!prefix) {
+
+  if (!prefix) 
+  {
     throw new Error('S3 prefix is required');
   }
 
@@ -96,7 +99,8 @@ export const deleteS3Prefix = async (prefix) => {
       .map((item) => ({ Key: item.Key }))
       .filter((item) => item.Key);
 
-    if (objects.length > 0) {
+    if (objects.length > 0) 
+    {
       const deleted = await s3.send(
         new DeleteObjectsCommand({
           Bucket: bucket,
@@ -107,19 +111,14 @@ export const deleteS3Prefix = async (prefix) => {
         })
       );
 
-      if (deleted.Errors?.length) {
+      if (deleted.Errors?.length) 
+      {
         throw new Error(
           `Failed to delete ${deleted.Errors.length} S3 object(s): ${
-            deleted.Errors
-              .map((item) => `${item.Key}: ${item.Message}`)
-              .join('; ')
-          }`
-        );
+            deleted.Errors.map((item) => `${item.Key}: ${item.Message}`).join('; ')}`);
       }
     }
 
-    continuationToken = listed.IsTruncated
-      ? listed.NextContinuationToken
-      : undefined;
-  } while (continuationToken);
+    continuationToken = listed.IsTruncated ? listed.NextContinuationToken : undefined;
+  }while(continuationToken);
 };

@@ -24,10 +24,14 @@ const getUploadedFile = (req, fieldName) =>
 const cleanupTempFiles = async (files = []) => {
   await Promise.all(
     files.filter(Boolean).map(async (file) => {
-      try {
+      try 
+      {
         await unlink(file.path);
-      } catch (error) {
-        if (error.code !== 'ENOENT') {
+      } 
+      catch (error) 
+      {
+        if (error.code !== 'ENOENT') 
+        {
           console.error('Temporary file cleanup failed:', error.message);
         }
       }
@@ -36,7 +40,9 @@ const cleanupTempFiles = async (files = []) => {
 };
 
 const getVideoDurationMinutes = async (filePath) => {
-  if (!ffprobeStatic?.path) {
+
+  if (!ffprobeStatic?.path) 
+  {
     throw new Error('FFprobe is unavailable. Check the ffprobe-static installation.');
   }
 
@@ -56,7 +62,8 @@ const getVideoDurationMinutes = async (filePath) => {
 
   const seconds = Number(stdout.trim());
 
-  if (!Number.isFinite(seconds) || seconds <= 0) {
+  if (!Number.isFinite(seconds) || seconds <= 0) 
+  {
     throw new Error('Could not extract the uploaded video duration.');
   }
 
@@ -65,6 +72,7 @@ const getVideoDurationMinutes = async (filePath) => {
 };
 
 const makeS3Key = (courseId, moduleId, file, type) => {
+
   const extension = path.extname(file.originalname).toLowerCase();
 
   return `${BUCKET_PREFIX}/${courseId}/modules/${moduleId}/${type}/${randomUUID()}${extension}`;
@@ -85,18 +93,13 @@ const refreshCourseProgress = async (courseId) => {
 
   await Promise.all(
     progressRecords.map(async (progress) => {
-      progress.completedLessons =
-        progress.completedLessons.filter((lessonId) =>
-          lessonIds.has(lessonId.toString())
+      progress.completedLessons = progress.completedLessons.filter((lessonId) => 
+        lessonIds.has(lessonId.toString())
         );
 
       progress.progressPercentage =
-        lessons.length > 0
-          ? Math.round(
-              (progress.completedLessons.length / lessons.length) * 100
-            )
-          : 0;
-
+        lessons.length > 0 ?
+          Math.round((progress.completedLessons.length / lessons.length) * 100): 0;
       await progress.save();
     })
   );
@@ -105,19 +108,20 @@ const refreshCourseProgress = async (courseId) => {
 // Delete old objects after the database update succeeds.
 // A deletion failure is logged instead of undoing a successful lesson update.
 const deleteOldS3Objects = async (keys = []) => {
-  for (const key of new Set(keys.filter(Boolean))) {
-    try {
+  for (const key of new Set(keys.filter(Boolean))) 
+  {
+    try 
+    {
       await deleteFromS3(key);
-    } catch (error) {
+    } 
+    catch (error) 
+    {
       console.error(`Could not delete old S3 object "${key}":`, error.message);
     }
   }
 };
 
-// =====================================================
-// CREATE LESSON
-// =====================================================
-
+// Create Lesson
 
 export const createLesson = asyncHandler(async (req, res) => {
   const { moduleId } = req.params;
@@ -139,24 +143,28 @@ export const createLesson = asyncHandler(async (req, res) => {
 
     const moduleDoc = await Module.findById(moduleId);
 
-    if (!moduleDoc) {
+    if (!moduleDoc) 
+    {
       res.status(404);
       throw new Error('Module not found');
     }
 
-    if (!title?.trim()) {
+    if (!title?.trim()) 
+    {
       res.status(400);
       throw new Error('Lesson title is required');
     }
 
-    if (videoFile && documentFile) {
+    if (videoFile && documentFile) 
+    {
       res.status(400);
       throw new Error('Upload either a video or a document, not both.');
     }
 
     const selectedContentType = contentType || 'video';
 
-    if (!['video', 'document'].includes(selectedContentType)) {
+    if (!['video', 'document'].includes(selectedContentType)) 
+    {
       res.status(400);
       throw new Error('Invalid lesson content type.');
     }
@@ -172,25 +180,23 @@ export const createLesson = asyncHandler(async (req, res) => {
     let finalDocumentText = '';
     let duration = 0;
 
-    if (selectedContentType === 'video') {
-      if (!videoFile) {
+    if (selectedContentType === 'video') 
+    {
+      if (!videoFile) 
+      {
         res.status(400);
         throw new Error('Please upload a video file.');
       }
 
-      if (documentFile) {
+      if (documentFile) 
+      {
         res.status(400);
         throw new Error('A video lesson cannot contain a document.');
       }
 
       duration = await getVideoDurationMinutes(videoFile.path);
 
-      videoKey = makeS3Key(
-        moduleDoc.course,
-        moduleId,
-        videoFile,
-        'videos'
-      );
+      videoKey = makeS3Key(moduleDoc.course,moduleId,videoFile,'videos');
 
       await uploadToS3({
         filePath: videoFile.path,
@@ -199,19 +205,25 @@ export const createLesson = asyncHandler(async (req, res) => {
       });
 
       uploadedKeys.push(videoKey);
-    } else {
-      if (videoFile) {
+    } 
+    else 
+    {
+      if (videoFile) 
+      {
         res.status(400);
         throw new Error('A document lesson cannot contain a video.');
       }
 
-      if (!['pdf', 'url', 'text'].includes(selectedDocumentType)) {
+      if (!['pdf', 'url', 'text'].includes(selectedDocumentType)) 
+      {
         res.status(400);
         throw new Error('Invalid document type.');
       }
 
-      if (selectedDocumentType === 'pdf') {
-        if (!documentFile) {
+      if (selectedDocumentType === 'pdf') 
+      {
+        if (!documentFile) 
+        {
           res.status(400);
           throw new Error('Please upload a PDF document.');
         }
@@ -233,24 +245,24 @@ export const createLesson = asyncHandler(async (req, res) => {
         finalDocumentUrl = '';
       }
 
-      if (selectedDocumentType === 'url' && !finalDocumentUrl) {
+      if (selectedDocumentType === 'url' && !finalDocumentUrl) 
+      {
         res.status(400);
         throw new Error('Documentation URL is required.');
       }
 
-      if (selectedDocumentType === 'text') {
-        if (!documentText?.trim()) {
+      if (selectedDocumentType === 'text') 
+      {
+        if (!documentText?.trim()) 
+        {
           res.status(400);
           throw new Error('Document text is required.');
         }
-
         finalDocumentText = documentText.trim();
       }
     }
 
-    const lessonCount = await Lesson.countDocuments({
-      module: moduleId,
-    });
+    const lessonCount = await Lesson.countDocuments({module: moduleId});
 
     const lesson = await Lesson.create({
       module: moduleId,
@@ -274,23 +286,28 @@ export const createLesson = asyncHandler(async (req, res) => {
       success: true,
       data: lesson,
     });
-  } catch (error) {
+  } 
+  catch (error) 
+  {
     await deleteOldS3Objects(uploadedKeys);
     throw error;
-  } finally {
+  } 
+  finally 
+  {
     await cleanupTempFiles(tempFiles);
   }
 });
 
 
-// =====================================================
-// UPDATE LESSON
-// =====================================================
+
+// Update Lesson 
 
 export const updateLesson = asyncHandler(async (req, res) => {
+
   let lesson = await Lesson.findById(req.params.id);
 
-  if (!lesson) {
+  if (!lesson) 
+  {
     res.status(404);
     throw new Error('Lesson not found');
   }
@@ -314,105 +331,94 @@ export const updateLesson = asyncHandler(async (req, res) => {
   order,
 } = req.body;
 
-    if (videoFile && documentFile) {
+    if (videoFile && documentFile) 
+    {
       res.status(400);
       throw new Error('Upload either a video or a PDF, not both.');
     }
 
     const nextContentType = contentType ?? lesson.contentType;
 
-    const nextDocumentType =
-  nextContentType === 'document'
-    ? documentType || (
-        lesson.contentType === 'document'
-          ? lesson.documentType
-          : 'pdf'
-      )
-    : '';
+    const nextDocumentType = nextContentType === 'document'? 
+    documentType || (lesson.contentType === 'document'? lesson.documentType : 'pdf') : '';
 
-    if (!['video', 'document'].includes(nextContentType)) {
+    if (!['video', 'document'].includes(nextContentType)) 
+    {
       res.status(400);
       throw new Error('Invalid lesson content type.');
     }
 
-    if (
-      nextContentType === 'document' &&
-      !['pdf', 'url', 'text'].includes(nextDocumentType)
-    ) {
+    if (nextContentType === 'document' && !['pdf', 'url', 'text'].includes(nextDocumentType)) 
+    {
       res.status(400);
       throw new Error('Invalid document type.');
     }
 
-    // -------------------------------------------------
-    // VALIDATE DURATION
-    // -------------------------------------------------
-
+    
+    // Validate Duration
+    
     let parsedDuration;
 
-    if (duration !== undefined) {
+    if (duration !== undefined) 
+    {
       parsedDuration = Number(duration);
 
-      if (
-        duration === '' ||
-        !Number.isFinite(parsedDuration) ||
-        parsedDuration < 0
-      ) {
+      if(duration === '' || !Number.isFinite(parsedDuration) || parsedDuration < 0) 
+      {
         res.status(400);
-        throw new Error(
-          'Duration must be a valid non-negative number.'
-        );
+        throw new Error('Duration must be a valid non-negative number.');
       }
     }
 
-    // -------------------------------------------------
-    // BASIC FIELDS
-    // -------------------------------------------------
-
-    if (title !== undefined) {
-      if (!title.trim()) {
+    // ----> Basic Fields
+  
+    if (title !== undefined) 
+    {
+      if (!title.trim()) 
+      {
         res.status(400);
         throw new Error('Lesson title is required.');
       }
-
       lesson.title = title.trim();
     }
 
-    if (description !== undefined) {
+    if (description !== undefined) 
+    {
       lesson.description = description;
     }
 
     
 
-    if (documentText !== undefined) {
+    if (documentText !== undefined) 
+    {
       lesson.documentText = documentText;
     }
 
-    if (order !== undefined) {
+    if (order !== undefined) 
+    {
       const parsedOrder = Number(order);
 
-      if (!Number.isInteger(parsedOrder) || parsedOrder < 1) {
+      if (!Number.isInteger(parsedOrder) || parsedOrder < 1) 
+      {
         res.status(400);
         throw new Error('Order must be a positive integer.');
       }
-
       lesson.order = parsedOrder;
     }
 
-    // -------------------------------------------------
-    // VIDEO
-    // -------------------------------------------------
+    // ----> Video
 
-    
-if (nextContentType === 'video') {
-  if (documentFile) {
+if (nextContentType === 'video') 
+{
+  if (documentFile) 
+  {
     res.status(400);
-    throw new Error(
-      'A video lesson cannot contain a document upload.'
-    );
+    throw new Error('A video lesson cannot contain a document upload.');
   }
 
   // Clear document fields for a video lesson.
-  if (lesson.documentKey) {
+  if (lesson.documentKey) 
+  {
     oldKeysToDelete.push(lesson.documentKey);
   }
 
@@ -421,9 +427,9 @@ if (nextContentType === 'video') {
   lesson.documentUrl = '';
   lesson.documentText = '';
 
-  if (videoFile) {
-    const extractedDuration =
-      await getVideoDurationMinutes(videoFile.path);
+  if (videoFile) 
+  {
+    const extractedDuration = await getVideoDurationMinutes(videoFile.path);
 
     const newVideoKey = makeS3Key(
       lesson.course,
@@ -440,54 +446,57 @@ if (nextContentType === 'video') {
 
     newlyUploadedKeys.push(newVideoKey);
 
-    if (lesson.videoKey) {
+    if (lesson.videoKey) 
+    {
       oldKeysToDelete.push(lesson.videoKey);
     }
 
     lesson.videoKey = newVideoKey;
     lesson.duration = extractedDuration;
-  } else if (
-    lesson.contentType !== 'video' ||
-    !lesson.videoKey
-  ) {
+  } 
+  else if (lesson.contentType !== 'video' || !lesson.videoKey) 
+  {
     res.status(400);
     throw new Error('Please upload a video file.');
-  } else if (parsedDuration !== undefined) {
+  } 
+  else if (parsedDuration !== undefined) {
     // Keep the existing S3 video and update its duration.
     lesson.duration = parsedDuration;
   }
 }
 
 
-    // -------------------------------------------------
-    // DOCUMENT
-    // -------------------------------------------------
+// -----> Document
 
-    if (nextContentType === 'document') {
-      if (videoFile) {
+    if (nextContentType === 'document') 
+    {
+      if (videoFile) 
+      {
         res.status(400);
-        throw new Error(
-          'A document lesson cannot contain a video upload.'
-        );
+        throw new Error('A document lesson cannot contain a video upload.');
       }
 
      // Remove the old video only when switching from video to document.
-if (lesson.contentType === 'video' && lesson.videoKey) {
-  oldKeysToDelete.push(lesson.videoKey);
-}
+      if (lesson.contentType === 'video' && lesson.videoKey) 
+      {
+        oldKeysToDelete.push(lesson.videoKey);
+      }
 
-lesson.videoKey = '';
+      lesson.videoKey = '';
 
       lesson.documentType = nextDocumentType;
 
       // Save estimated reading duration for documents.
-      if (parsedDuration !== undefined) {
+      if (parsedDuration !== undefined) 
+      {
         lesson.duration = parsedDuration;
       }
 
-      // PDF
-      if (nextDocumentType === 'pdf') {
-        if (documentFile) {
+      //---> PDF
+      if (nextDocumentType === 'pdf') 
+      {
+        if (documentFile) 
+        {
           const newDocumentKey = makeS3Key(
             lesson.course,
             lesson.module,
@@ -503,40 +512,50 @@ lesson.videoKey = '';
 
           newlyUploadedKeys.push(newDocumentKey);
 
-          if (lesson.documentKey) {
+          if (lesson.documentKey) 
+          {
             oldKeysToDelete.push(lesson.documentKey);
           }
 
           lesson.documentKey = newDocumentKey;
           lesson.documentUrl = '';
-        } else if (documentUrl !== undefined) {
-          if (!documentUrl.trim()) {
+        } 
+        else if (documentUrl !== undefined) 
+        {
+          if (!documentUrl.trim()) 
+          {
             res.status(400);
             throw new Error('PDF URL cannot be empty.');
           }
 
-          if (lesson.documentKey) {
+          if (lesson.documentKey) 
+          {
             oldKeysToDelete.push(lesson.documentKey);
           }
 
           lesson.documentKey = '';
           lesson.documentUrl = documentUrl.trim();
-        } else if (!lesson.documentKey && !lesson.documentUrl) {
+        } 
+        else if (!lesson.documentKey && !lesson.documentUrl) 
+        {
           res.status(400);
           throw new Error('Please upload a PDF document.');
         }
       }
 
-      // WEB URL
-      if (nextDocumentType === 'url') {
+      // ---> Web URL
+      if (nextDocumentType === 'url') 
+      {
         const nextUrl = documentUrl ?? lesson.documentUrl;
 
-        if (!nextUrl?.trim()) {
+        if (!nextUrl?.trim()) 
+        {
           res.status(400);
           throw new Error('Documentation URL is required.');
         }
 
-        if (lesson.documentKey) {
+        if (lesson.documentKey) 
+        {
           oldKeysToDelete.push(lesson.documentKey);
         }
 
@@ -544,14 +563,17 @@ lesson.videoKey = '';
         lesson.documentUrl = nextUrl.trim();
       }
 
-      // TEXT
-      if (nextDocumentType === 'text') {
-        if (!lesson.documentText?.trim()) {
+      // ---> Text
+      if (nextDocumentType === 'text') 
+      {
+        if (!lesson.documentText?.trim()) 
+        {
           res.status(400);
           throw new Error('Document text is required.');
         }
 
-        if (lesson.documentKey) {
+        if (lesson.documentKey) 
+        {
           oldKeysToDelete.push(lesson.documentKey);
         }
 
@@ -560,10 +582,8 @@ lesson.videoKey = '';
       }
     }
 
-    // -------------------------------------------------
-    // SAVE AND UPDATE COURSE STATISTICS
-    // -------------------------------------------------
-
+    // ---> SAVE AND UPDATE COURSE STATISTICS
+  
     lesson.contentType = nextContentType;
 
     lesson = await lesson.save();
@@ -576,24 +596,28 @@ lesson.videoKey = '';
       success: true,
       data: lesson,
     });
-  } catch (error) {
+  } 
+  catch (error) 
+  {
     // Remove newly uploaded S3 objects if the update fails.
     await deleteOldS3Objects(newlyUploadedKeys);
 
     throw error;
-  } finally {
+  } 
+  finally
+  {
     await cleanupTempFiles(tempFiles);
   }
 });
 
-// =====================================================
-// DELETE LESSON
-// =====================================================
+
+// Delete Lesson
 
 export const deleteLesson = asyncHandler(async (req, res) => {
   const lesson = await Lesson.findById(req.params.id);
 
-  if (!lesson) {
+  if (!lesson) 
+  {
     res.status(404);
     throw new Error('Lesson not found');
   }
@@ -613,14 +637,15 @@ export const deleteLesson = asyncHandler(async (req, res) => {
   });
 });
 
-// =====================================================
-// GET LESSON BY ID
-// =====================================================
+
+// Get Lesson By ID
 
 export const getLessonById = asyncHandler(async (req, res) => {
+
   const lesson = await Lesson.findById(req.params.id);
 
-  if (!lesson) {
+  if (!lesson) 
+  {
     res.status(404);
     throw new Error('Lesson not found');
   }

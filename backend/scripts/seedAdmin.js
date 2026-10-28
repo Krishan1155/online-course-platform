@@ -11,7 +11,8 @@ const seedAdmin = async () => {
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@courseplatform.com';
     const adminExists = await User.findOne({ email: adminEmail });
 
-    if (!adminExists) {
+   if (!adminExists) 
+  {
       await User.create({
         name: 'Admin',
         email: adminEmail,
@@ -20,17 +21,20 @@ const seedAdmin = async () => {
         isVerified: true,
       });
       console.log(`Admin user created: ${adminEmail}`);
-    } 
-  else {
-  adminExists.role = 'admin';
-  adminExists.isVerified = true;
-  await adminExists.save();
+  } 
+  else 
+  {
+    adminExists.role = 'admin';
+    adminExists.isVerified = true;
+    await adminExists.save();
 
-  console.log(`Admin role ensured for: ${adminEmail}`);
-}
+    console.log(`Admin role ensured for: ${adminEmail}`);
+  }
 
     process.exit(0);
-  } catch (error) {
+  } 
+  catch (error) 
+  {
     console.error('Seed error:', error.message);
     process.exit(1);
   }

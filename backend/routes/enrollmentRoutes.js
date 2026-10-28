@@ -8,51 +8,23 @@ import {
   getAllEnrollments,
 } from '../controllers/enrollmentController.js';
 
-import {
-  protect,
-  authorize,
-} from '../middleware/authMiddleware.js';
+import {protect,authorize} from '../middleware/authMiddleware.js';
 
-const router =
-  express.Router();
-
+const router = express.Router();
 
 //  ----> Student
 
+router.get('/my',protect,getMyEnrollments);
 
-router.get(
-  '/my',
-  protect,
-  getMyEnrollments
-);
+router.get('/check/:courseId',protect,checkEnrollment);
 
-router.get(
-  '/check/:courseId',
-  protect,
-  checkEnrollment
-);
+router.get('/content/:courseId',protect,getCourseContent);
 
-router.get(
-  '/content/:courseId',
-  protect,
-  getCourseContent
-);
-
-router.post(
-  '/free/:courseId',
-  protect,
-  enrollFreeCourse
-);
+router.post('/free/:courseId',protect,enrollFreeCourse);
 
 
 // ----> Admin
 
-
-router.get(
-  '/admin/all',
-  protect,
-  authorize('admin'),
-  getAllEnrollments
-);
+router.get('/admin/all',protect,authorize('admin'),getAllEnrollments);
 
 export default router;

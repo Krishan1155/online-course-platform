@@ -5,9 +5,7 @@ import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
 import sendEmail, { isEmailConfigured } from '../utils/sendEmail.js';
 
-const googleClient = new OAuth2Client(
-  process.env.GOOGLE_CLIENT_ID
-);
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const getVerificationEmailHtml = (name, url) => `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -52,7 +50,7 @@ const getResetPasswordEmailHtml = (name, url) => `
   </div>
 `;
 
-// REGISTER
+// ------> REGISTER
 export const register = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -73,8 +71,7 @@ export const register = asyncHandler(async (req, res) => {
     verificationTokenExpire: Date.now() + 24 * 60 * 60 * 1000,
   });
 
-  const verifyUrl =
-    `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
+  const verifyUrl = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
 
   let emailSent = false;
 
@@ -86,7 +83,9 @@ export const register = asyncHandler(async (req, res) => {
     });
 
     emailSent = true;
-  } catch (error) {
+  } 
+  catch (error) 
+  {
     console.error('Email send failed:', error.message);
 
     if (process.env.NODE_ENV !== 'production') {
@@ -122,12 +121,14 @@ export const login = asyncHandler(async (req, res) => {
 
   const user = await User.findOne({ email }).select('+password');
 
-  if (!user || !(await user.matchPassword(password))) {
+  if (!user || !(await user.matchPassword(password))) 
+  {
     res.status(401);
     throw new Error('Invalid email or password');
   }
 
-  if (!user.isVerified) {
+  if (!user.isVerified) 
+  {
     res.status(403);
     throw new Error('Please verify your email before logging in');
   }
@@ -151,7 +152,8 @@ export const login = asyncHandler(async (req, res) => {
 export const googleLogin = asyncHandler(async (req, res) => {
   const { credential } = req.body;
 
-  if (!credential) {
+  if (!credential) 
+  {
     res.status(400);
     throw new Error('Google credential is required');
   }
@@ -163,17 +165,13 @@ export const googleLogin = asyncHandler(async (req, res) => {
 
   const payload = ticket.getPayload();
 
-  if (!payload) {
+  if (!payload) 
+  {
     res.status(401);
     throw new Error('Invalid Google token');
   }
 
-  const {
-    sub: googleId,
-    email,
-    name,
-    email_verified,
-  } = payload;
+  const {sub: googleId, email, name, email_verified} = payload;
 
   if (!email_verified) {
     res.status(401);
@@ -271,18 +269,15 @@ export const resendVerification = asyncHandler(async (req, res) => {
   const verificationToken = crypto.randomBytes(32).toString('hex');
 
   user.verificationToken = verificationToken;
-  user.verificationTokenExpire =
-    Date.now() + 24 * 60 * 60 * 1000;
+  user.verificationTokenExpire = Date.now() + 24 * 60 * 60 * 1000;
 
   await user.save();
 
-  const verifyUrl =
-    `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
+  const verifyUrl = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
 
-  if (!isEmailConfigured() && process.env.NODE_ENV !== 'production') {
-    console.log(
-      `Development verification link for ${user.email}: ${verifyUrl}`
-    );
+  if (!isEmailConfigured() && process.env.NODE_ENV !== 'production') 
+  {
+    console.log(`Development verification link for ${user.email}: ${verifyUrl}`);
 
     res.json({
       success: true,
@@ -314,7 +309,8 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 
   const user = await User.findOne({ email });
 
-  if (!user) {
+  if (!user) 
+  {
     res.json({
       success: true,
       message:
@@ -334,14 +330,12 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     .digest('hex');
 
   // Token expires after 1 hour
-  user.resetPasswordExpire =
-    Date.now() + 60 * 60 * 1000;
+  user.resetPasswordExpire = Date.now() + 60 * 60 * 1000;
 
   await user.save();
 
   // Create reset URL
-  const resetUrl =
-    `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+  const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
   try {
     await sendEmail({
@@ -352,7 +346,9 @@ export const forgotPassword = asyncHandler(async (req, res) => {
         resetUrl
       ),
     });
-  } catch (error) {
+  } 
+  catch (error) 
+  {
     console.error('Email failed:', error.message);
 
     user.resetPasswordToken = undefined;
@@ -386,7 +382,8 @@ export const resetPassword = asyncHandler(async (req, res) => {
     resetPasswordExpire: { $gt: Date.now() },
   });
 
-  if (!user) {
+  if (!user) 
+  {
     res.status(400);
     throw new Error('Invalid or expired reset token');
   }
@@ -402,39 +399,6 @@ export const resetPassword = asyncHandler(async (req, res) => {
     message: 'Password reset successful',
     data: {
       token: generateToken(user._id, user.role),
-    },
-  });
-});
-
-// UPDATE PROFILE
-export const updateProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id);
-
-  if (!user) {
-    res.status(404);
-    throw new Error('User not found');
-  }
-
-  user.name = req.body.name || user.name;
-
-  if (req.body.password) {
-    user.password = req.body.password;
-  }
-
-  const updatedUser = await user.save();
-
-  res.json({
-    success: true,
-    data: {
-      _id: updatedUser._id,
-      name: updatedUser.name,
-      email: updatedUser.email,
-      role: updatedUser.role,
-      isVerified: updatedUser.isVerified,
-      token: generateToken(
-        updatedUser._id,
-        updatedUser.role
-      ),
     },
   });
 });

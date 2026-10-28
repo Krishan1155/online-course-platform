@@ -13,7 +13,8 @@ const updateCourseRating = async (courseId) => {
 
   const ratingCount = reviews.length;
 
-  if (ratingCount === 0) {
+  if (ratingCount === 0) 
+  {
     await Course.findByIdAndUpdate(courseId, {
       ratingAverage: 0,
       ratingCount: 0,
@@ -51,7 +52,6 @@ const updateCourseRating = async (courseId) => {
 // -----> Get Course Review
 // Public
 
-
 export const getCourseReviews = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
 
@@ -73,9 +73,7 @@ export const getCourseReviews = asyncHandler(async (req, res) => {
 
   if (req.user) 
   {
-    userReview = reviews.find(
-      (review) => review.user?._id?.toString() === req.user._id.toString()
-    );
+    userReview = reviews.find((review) => review.user?._id?.toString() === req.user._id.toString());
   }
 
   const safeReviews = reviews.map((review) => ({
@@ -87,15 +85,9 @@ export const getCourseReviews = asyncHandler(async (req, res) => {
     helpfulCount: review.helpfulBy.length,
     notHelpfulCount: review.notHelpfulBy.length,
     isHelpful: req.user ? review.helpfulBy.some(
-          (id) => id.toString() === req.user._id.toString()
-        )
-      : false,
-    isNotHelpful: req.user
-      ? review.notHelpfulBy.some(
-          (id) =>
-            id.toString() === req.user._id.toString()
-        )
-      : false,
+          (id) => id.toString() === req.user._id.toString()) : false,
+    isNotHelpful: req.user ? 
+    review.notHelpfulBy.some((id) => id.toString() === req.user._id.toString()) : false,
   }));
 
   res.json({
@@ -103,8 +95,8 @@ export const getCourseReviews = asyncHandler(async (req, res) => {
     count: safeReviews.length,
     data: {
       reviews: safeReviews,
-      userReview: userReview
-        ? {
+      userReview: userReview ? 
+          {
             _id: userReview._id,
             rating: userReview.rating,
             comment: userReview.comment,
@@ -117,7 +109,6 @@ export const getCourseReviews = asyncHandler(async (req, res) => {
 
 // ----> Create Review
 // Enrolled Students Only
-
 
 export const createReview = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
@@ -147,27 +138,22 @@ export const createReview = asyncHandler(async (req, res) => {
     course: courseId,
   });
 
-  if (existingReview) {
+  if (existingReview) 
+  {
     res.status(400);
-    throw new Error(
-      'You have already reviewed this course'
-    );
+    throw new Error('You have already reviewed this course');
   }
 
   const numericRating = Number(rating);
 
-  if (
-    !Number.isInteger(numericRating) ||
-    numericRating < 1 ||
-    numericRating > 5
-  ) {
+  if(!Number.isInteger(numericRating) || numericRating < 1 || numericRating > 5) 
+  {
     res.status(400);
-    throw new Error(
-      'Rating must be between 1 and 5'
-    );
+    throw new Error('Rating must be between 1 and 5');
   }
 
-  if (!comment || !comment.trim()) {
+  if (!comment || !comment.trim()) 
+  {
     res.status(400);
     throw new Error('Review comment is required');
   }
@@ -201,7 +187,8 @@ export const updateReview = asyncHandler(async (req, res) => {
 
   const review = await Review.findById(reviewId);
 
-  if (!review) {
+  if (!review) 
+  {
     res.status(404);
     throw new Error('Review not found');
   }
@@ -250,7 +237,8 @@ export const deleteReview = asyncHandler(async (req, res) => {
 
   const review = await Review.findById(reviewId);
 
-  if(!review) {
+  if(!review) 
+  {
     res.status(404);
     throw new Error('Review not found');
   }
@@ -274,7 +262,7 @@ export const deleteReview = asyncHandler(async (req, res) => {
 });
 
 
-// Helpful / Not Helpful
+// --->  Helpful / Not Helpful
 
 export const markReviewHelpful=asyncHandler(
   async (req, res) => {

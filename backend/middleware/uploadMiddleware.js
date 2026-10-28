@@ -20,7 +20,7 @@ for (const directory of [
   mkdirSync(directory, { recursive: true });
 }
 
-// Existing thumbnail upload: stored locally.
+// ---> Existing thumbnail upload: stored locally.
 const thumbnailStorage = multer.diskStorage({
   destination: (_req, _file, cb) => {
     cb(null, uploadsDir);
@@ -39,7 +39,8 @@ const imageFilter = (_req, file, cb) => {
     'image/gif',
   ];
 
-  if (allowedTypes.includes(file.mimetype)) {
+  if (allowedTypes.includes(file.mimetype)) 
+  {
     return cb(null, true);
   }
 
@@ -52,7 +53,7 @@ export const uploadThumbnail = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-// Existing document upload: stored locally for backward compatibility.
+//---> Existing document upload: stored locally for backward compatibility.
 const documentStorage = multer.diskStorage({
   destination: (_req, _file, cb) => {
     cb(null, documentsDir);
@@ -65,10 +66,8 @@ const documentStorage = multer.diskStorage({
 const pdfFilter = (_req, file, cb) => {
   const extension = path.extname(file.originalname).toLowerCase();
 
-  if (
-    file.mimetype === 'application/pdf' &&
-    extension === '.pdf'
-  ) {
+  if(file.mimetype === 'application/pdf' && extension === '.pdf') 
+  {
     return cb(null, true);
   }
 
@@ -81,7 +80,8 @@ export const uploadDocument = multer({
   limits: { fileSize: 10 * 1024 * 1024 },
 });
 
-// New lesson-media uploads: temporary disk storage before S3 upload.
+// ----> New lesson-media uploads: temporary disk storage before S3 upload.
+
 // Video field: "video"
 // PDF field: "document"
 const lessonMediaStorage = multer.diskStorage({
@@ -114,30 +114,24 @@ const videoMimeTypes = new Set([
 const lessonMediaFilter = (_req, file, cb) => {
   const extension = path.extname(file.originalname).toLowerCase();
 
-  if (file.fieldname === 'video') {
-    if (
-      videoExtensions.has(extension) &&
-      videoMimeTypes.has(file.mimetype)
-    ) {
+  if (file.fieldname === 'video') 
+  {
+    if(videoExtensions.has(extension) && videoMimeTypes.has(file.mimetype)) 
+    {
       return cb(null, true);
     }
 
-    return cb(
-      new Error('Use a supported MP4, WebM, MOV, or M4V video file.')
-    );
+    return cb(new Error('Use a supported MP4, WebM, MOV, or M4V video file.'));
   }
 
-  if (file.fieldname === 'document') {
-    if (
-      extension === '.pdf' &&
-      file.mimetype === 'application/pdf'
-    ) {
+  if (file.fieldname === 'document') 
+  {
+    if (extension === '.pdf' && file.mimetype === 'application/pdf') 
+    {
       return cb(null, true);
     }
-
     return cb(new Error('Only PDF files are allowed.'));
   }
-
   cb(new Error('Unexpected lesson-media field.'));
 };
 

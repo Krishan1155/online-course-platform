@@ -64,9 +64,8 @@ const courseSchema = new mongoose.Schema(
       default: 0,
     },
 
-    // ==============================
-    // COURSE RATING
-    // ==============================
+    
+    // ---> Course Rating
 
     ratingAverage: {
       type: Number,

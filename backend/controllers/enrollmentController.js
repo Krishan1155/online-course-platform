@@ -8,64 +8,58 @@ import Lesson from '../models/Lesson.js';
 import { createSignedMediaUrl } from '../utils/s3.js';
 
 const recalculateProgress = async (userId, courseId) => {
-  const lessons = await Lesson.find({
-    course: courseId,
-  }).select('_id');
 
-  const lessonIds = new Set(
-    lessons.map((lesson) => lesson._id.toString())
-  );
+const lessons = await Lesson.find({course: courseId,}).select('_id');
 
-  let progress = await Progress.findOne({
+const lessonIds = new Set(lessons.map((lesson) => lesson._id.toString()));
+
+let progress = await Progress.findOne({
     user: userId,
     course: courseId,
   });
 
-  if (!progress) {
+  if (!progress) 
+  {
     progress = await Progress.create({
       user: userId,
       course: courseId,
       completedLessons: [],
       progressPercentage: 0,
     });
-
     return progress;
   }
 
-  progress.completedLessons =
-    progress.completedLessons.filter((lessonId) =>
-      lessonIds.has(lessonId.toString())
+  progress.completedLessons = progress.completedLessons.filter((lessonId) =>
+    lessonIds.has(lessonId.toString())
     );
 
   const totalLessons = lessons.length;
   const completedLessons = progress.completedLessons.length;
 
   progress.progressPercentage =
-    totalLessons > 0
-      ? Math.round((completedLessons / totalLessons) * 100)
-      : 0;
+    totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
   await progress.save();
 
   return progress;
 };
 
-// Enroll in a free course.
+// ----> Enroll in a free course.
 export const enrollFreeCourse = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
 
   const course = await Course.findById(courseId);
 
-  if (!course) {
+  if (!course) 
+  {
     res.status(404);
     throw new Error('Course not found');
   }
 
-  if (course.price > 0) {
+  if (course.price > 0) 
+  {
     res.status(400);
-    throw new Error(
-      'This course requires payment. Use the payment flow.'
-    );
+    throw new Error('This course requires payment. Use the payment flow.');
   }
 
   const existing = await Enrollment.findOne({
@@ -73,7 +67,8 @@ export const enrollFreeCourse = asyncHandler(async (req, res) => {
     course: courseId,
   });
 
-  if (existing) {
+  if (existing) 
+  {
     res.status(400);
     throw new Error('Already enrolled in this course');
   }
@@ -96,7 +91,7 @@ export const enrollFreeCourse = asyncHandler(async (req, res) => {
   });
 });
 
-// Get courses of current student.
+// ---> Get courses of current student.
 export const getMyEnrollments = asyncHandler(async (req, res) => {
   const enrollments = await Enrollment.find({
     user: req.user._id,
@@ -108,9 +103,7 @@ export const getMyEnrollments = asyncHandler(async (req, res) => {
     })
     .sort({ enrolledAt: -1 });
 
-  const validEnrollments = enrollments.filter(
-    (enrollment) => enrollment.course !== null
-  );
+  const validEnrollments = enrollments.filter((enrollment) => enrollment.course !== null);
 
   const enrollmentsWithProgress = await Promise.all(
     validEnrollments.map(async (enrollment) => {
@@ -136,7 +129,8 @@ export const getMyEnrollments = asyncHandler(async (req, res) => {
   });
 });
 
-// Check whether current user is enrolled.
+
+// ---> Check whether current user is enrolled.
 export const checkEnrollment = asyncHandler(async (req, res) => {
   const enrollment = await Enrollment.findOne({
     user: req.user._id,
@@ -152,7 +146,7 @@ export const checkEnrollment = asyncHandler(async (req, res) => {
   });
 });
 
-// Get complete course content for an enrolled student.
+// ----> Get complete course content for an enrolled student.
 export const getCourseContent = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
 
@@ -161,14 +155,16 @@ export const getCourseContent = asyncHandler(async (req, res) => {
     course: courseId,
   });
 
-  if (!enrollment) {
+  if (!enrollment) 
+  {
     res.status(403);
     throw new Error('You are not enrolled in this course');
   }
 
   const course = await Course.findById(courseId);
 
-  if (!course) {
+  if (!course) 
+  {
     res.status(404);
     throw new Error('Course not found');
   }
@@ -192,14 +188,14 @@ export const getCourseContent = asyncHandler(async (req, res) => {
         lessons.map(async (lesson) => {
           const lessonData = lesson.toObject();
 
-          if (lesson.videoKey) {
-            lessonData.videoPlaybackUrl =
-              await createSignedMediaUrl(lesson.videoKey);
+          if (lesson.videoKey) 
+          {
+            lessonData.videoPlaybackUrl = await createSignedMediaUrl(lesson.videoKey);
           }
 
-          if (lesson.documentKey) {
-            lessonData.documentPlaybackUrl =
-              await createSignedMediaUrl(lesson.documentKey);
+          if (lesson.documentKey) 
+          {
+            lessonData.documentPlaybackUrl = await createSignedMediaUrl(lesson.documentKey);
           }
 
           return lessonData;
@@ -212,8 +208,6 @@ export const getCourseContent = asyncHandler(async (req, res) => {
       };
     })
   );
-
-  // This response and its closing braces were missing.
   res.json({
     success: true,
     data: {
@@ -224,7 +218,8 @@ export const getCourseContent = asyncHandler(async (req, res) => {
   });
 });
 
-// Get all enrollments for admin.
+
+// ----> Get all enrollments for admin.
 export const getAllEnrollments = asyncHandler(async (req, res) => {
   const enrollments = await Enrollment.find()
     .populate('user', 'name email')

@@ -8,45 +8,23 @@ import {
   markReviewHelpful,
 } from '../controllers/reviewController.js';
 
-import {
-  protect,
-  optionalProtect,
-} from '../middleware/authMiddleware.js';
+import {protect,optionalProtect} from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 // Public: anyone can see reviews
-router.get(
-  '/course/:courseId',
-  optionalProtect,
-  getCourseReviews
-);
+router.get('/course/:courseId',optionalProtect,getCourseReviews);
 
 // Enrolled students only
-router.post(
-  '/course/:courseId',
-  protect,
-  createReview
-);
+router.post('/course/:courseId',protect,createReview);
 
-// Student's own review
-router.put(
-  '/:reviewId',
-  protect,
-  updateReview
-);
+// Student's own review (update)
+router.put('/:reviewId',protect,updateReview);
 
-router.delete(
-  '/:reviewId',
-  protect,
-  deleteReview
-);
+// // Student's own review (delete)
+router.delete('/:reviewId',protect,deleteReview);
 
 // Helpful / not helpful
-router.post(
-  '/:reviewId/helpful',
-  protect,
-  markReviewHelpful
-);
+router.post('/:reviewId/helpful',protect,markReviewHelpful);
 
 export default router;

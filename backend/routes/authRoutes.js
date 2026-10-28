@@ -10,7 +10,6 @@ import {
   resendVerification,
   forgotPassword,
   resetPassword,
-  updateProfile,
 } from '../controllers/authController.js';
 
 import { protect } from '../middleware/authMiddleware.js';
@@ -34,7 +33,5 @@ router.post('/resend-verification', protect, resendVerification);
 router.post('/forgot-password', forgotPassword);
 
 router.put('/reset-password/:token', resetPassword);
-
-router.put('/profile', protect, updateProfile);
 
 export default router;
