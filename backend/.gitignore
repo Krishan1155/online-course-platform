@@ -3,6 +3,10 @@ node_modules/
 uploads/*
 !uploads/.gitkeep
 
+
+cloudfront-public-key.pem
+cloudfront-private-key.pem
+
 # Environment
 .env
 

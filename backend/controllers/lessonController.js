@@ -12,9 +12,11 @@ import Lesson from '../models/Lesson.js';
 import Module from '../models/Module.js';
 import Progress from '../models/Progress.js';
 import { updateCourseStats } from './courseController.js';
-import { uploadToS3, deleteFromS3 } from '../utils/s3.js';
+import { uploadToS3, deleteFromS3,createSignedMediaUrl } from '../utils/s3.js';
+import Enrollment from '../models/Enrollment.js';
 
-const execFileAsync = promisify(execFile);
+//Convert execFile into a Promise-based function so we can use async/await.
+const execFileAsync = promisify(execFile); 
 
 const BUCKET_PREFIX = 'courses';
 
@@ -27,17 +29,18 @@ const cleanupTempFiles = async (files = []) => {
       try 
       {
         await unlink(file.path);
-      } 
-      catch (error) 
+      }catch (error) 
       {
         if (error.code !== 'ENOENT') 
         {
           console.error('Temporary file cleanup failed:', error.message);
         }
-      }
+      } 
+      
     })
   );
 };
+
 
 const getVideoDurationMinutes = async (filePath) => {
 
@@ -48,16 +51,15 @@ const getVideoDurationMinutes = async (filePath) => {
 
   const { stdout } = await execFileAsync(
     ffprobeStatic.path,
+
+    //command-line arguments
     [
-      '-v',
-      'error',
-      '-show_entries',
-      'format=duration',
-      '-of',
-      'default=noprint_wrappers=1:nokey=1',
+      '-v', 'error', // Display only errors
+      '-show_entries', 'format=duration', //Extract video duration
+      '-of', 'default=noprint_wrappers=1:nokey=1', //Return only the duration value
       filePath,
     ],
-    { timeout: 60000 }
+    { timeout: 60000 } //60 sec
   );
 
   const seconds = Number(stdout.trim());
@@ -71,6 +73,8 @@ const getVideoDurationMinutes = async (filePath) => {
   return Math.round((seconds / 60) * 10) / 10;
 };
 
+
+
 const makeS3Key = (courseId, moduleId, file, type) => {
 
   const extension = path.extname(file.originalname).toLowerCase();
@@ -78,7 +82,11 @@ const makeS3Key = (courseId, moduleId, file, type) => {
   return `${BUCKET_PREFIX}/${courseId}/modules/${moduleId}/${type}/${randomUUID()}${extension}`;
 };
 
+
+
+//updating progress of each stundet , perticular course.
 const refreshCourseProgress = async (courseId) => {
+
   const lessons = await Lesson.find({
     course: courseId,
   }).select('_id');
@@ -97,8 +105,7 @@ const refreshCourseProgress = async (courseId) => {
         lessonIds.has(lessonId.toString())
         );
 
-      progress.progressPercentage =
-        lessons.length > 0 ?
+      progress.progressPercentage = lessons.length > 0 ?
           Math.round((progress.completedLessons.length / lessons.length) * 100): 0;
       await progress.save();
     })
@@ -106,9 +113,9 @@ const refreshCourseProgress = async (courseId) => {
 };
 
 // Delete old objects after the database update succeeds.
-// A deletion failure is logged instead of undoing a successful lesson update.
+// This function is used to delete old files from AWS S3 after a lesson has been successfully updated.
 const deleteOldS3Objects = async (keys = []) => {
-  for (const key of new Set(keys.filter(Boolean))) 
+  for (const key of new Set(keys.filter(Boolean))) //If the same S3 key accidentally appears multiple times, we only want to attempt deleting it once.
   {
     try 
     {
@@ -120,6 +127,8 @@ const deleteOldS3Objects = async (keys = []) => {
     }
   }
 };
+
+
 
 // Create Lesson
 
@@ -161,18 +170,15 @@ export const createLesson = asyncHandler(async (req, res) => {
       throw new Error('Upload either a video or a document, not both.');
     }
 
-    const selectedContentType = contentType || 'video';
+    const selectedContentType = contentType || 'video';   // video/document
 
-    if (!['video', 'document'].includes(selectedContentType)) 
+    if(!['video', 'document'].includes(selectedContentType)) 
     {
       res.status(400);
       throw new Error('Invalid lesson content type.');
     }
 
-    const selectedDocumentType =
-      selectedContentType === 'document'
-        ? documentType || 'pdf'
-        : '';
+    const selectedDocumentType = selectedContentType === 'document' ? documentType || 'pdf' : '';
 
     let videoKey = '';
     let documentKey = '';
@@ -186,12 +192,6 @@ export const createLesson = asyncHandler(async (req, res) => {
       {
         res.status(400);
         throw new Error('Please upload a video file.');
-      }
-
-      if (documentFile) 
-      {
-        res.status(400);
-        throw new Error('A video lesson cannot contain a document.');
       }
 
       duration = await getVideoDurationMinutes(videoFile.path);
@@ -280,6 +280,7 @@ export const createLesson = asyncHandler(async (req, res) => {
     });
 
     await refreshCourseProgress(moduleDoc.course);
+
     await updateCourseStats(moduleDoc.course);
 
     res.status(201).json({
@@ -287,7 +288,7 @@ export const createLesson = asyncHandler(async (req, res) => {
       data: lesson,
     });
   } 
-  catch (error) 
+  catch(error) //MongoDB lesson creation fails
   {
     await deleteOldS3Objects(uploadedKeys);
     throw error;
@@ -297,6 +298,7 @@ export const createLesson = asyncHandler(async (req, res) => {
     await cleanupTempFiles(tempFiles);
   }
 });
+
 
 
 
@@ -337,7 +339,7 @@ export const updateLesson = asyncHandler(async (req, res) => {
       throw new Error('Upload either a video or a PDF, not both.');
     }
 
-    const nextContentType = contentType ?? lesson.contentType;
+    const nextContentType = contentType ?? lesson.contentType;  // if null or undefined then use current 
 
     const nextDocumentType = nextContentType === 'document'? 
     documentType || (lesson.contentType === 'document'? lesson.documentType : 'pdf') : '';
@@ -370,8 +372,7 @@ export const updateLesson = asyncHandler(async (req, res) => {
       }
     }
 
-    // ----> Basic Fields
-  
+    // Basic Fields
     if (title !== undefined) 
     {
       if (!title.trim()) 
@@ -387,13 +388,6 @@ export const updateLesson = asyncHandler(async (req, res) => {
       lesson.description = description;
     }
 
-    
-
-    if (documentText !== undefined) 
-    {
-      lesson.documentText = documentText;
-    }
-
     if (order !== undefined) 
     {
       const parsedOrder = Number(order);
@@ -406,7 +400,8 @@ export const updateLesson = asyncHandler(async (req, res) => {
       lesson.order = parsedOrder;
     }
 
-    // ----> Video
+
+// ----> Video
 
 if (nextContentType === 'video') 
 {
@@ -454,15 +449,13 @@ if (nextContentType === 'video')
     lesson.videoKey = newVideoKey;
     lesson.duration = extractedDuration;
   } 
+  // Suppose the admin changes a PDF lesson into a video lesson but doesn't upload a video. 
+  // We cannot create a valid video lesson without a video file.
   else if (lesson.contentType !== 'video' || !lesson.videoKey) 
   {
     res.status(400);
     throw new Error('Please upload a video file.');
   } 
-  else if (parsedDuration !== undefined) {
-    // Keep the existing S3 video and update its duration.
-    lesson.duration = parsedDuration;
-  }
 }
 
 
@@ -495,6 +488,9 @@ if (nextContentType === 'video')
       //---> PDF
       if (nextDocumentType === 'pdf') 
       {
+        
+        lesson.documentText = '';
+
         if (documentFile) 
         {
           const newDocumentKey = makeS3Key(
@@ -534,8 +530,10 @@ if (nextContentType === 'video')
           }
 
           lesson.documentKey = '';
+          lesson.documentText = '';
           lesson.documentUrl = documentUrl.trim();
         } 
+        //This allows the admin to update only the title or description without uploading the PDF again.
         else if (!lesson.documentKey && !lesson.documentUrl) 
         {
           res.status(400);
@@ -561,18 +559,25 @@ if (nextContentType === 'video')
 
         lesson.documentKey = '';
         lesson.documentUrl = nextUrl.trim();
+        lesson.documentText = '';
       }
 
       // ---> Text
       if (nextDocumentType === 'text') 
       {
-        if (!lesson.documentText?.trim()) 
+
+        if (documentText !== undefined) 
+       {
+          lesson.documentText = documentText;
+       }
+
+        if (!lesson.documentText?.trim()) //This validation checks whether the final text is empty.
         {
           res.status(400);
           throw new Error('Document text is required.');
         }
 
-        if (lesson.documentKey) 
+        if (lesson.documentKey) //Remove the old PDF reference
         {
           oldKeysToDelete.push(lesson.documentKey);
         }
@@ -611,6 +616,7 @@ if (nextContentType === 'video')
 });
 
 
+
 // Delete Lesson
 
 export const deleteLesson = asyncHandler(async (req, res) => {
@@ -638,10 +644,10 @@ export const deleteLesson = asyncHandler(async (req, res) => {
 });
 
 
+
+
 // Get Lesson By ID
-
 export const getLessonById = asyncHandler(async (req, res) => {
-
   const lesson = await Lesson.findById(req.params.id);
 
   if (!lesson) 
@@ -650,8 +656,70 @@ export const getLessonById = asyncHandler(async (req, res) => {
     throw new Error('Lesson not found');
   }
 
+  const lessonData = lesson.toObject();
+
+  // Do not expose private S3 object keys.
+  delete lessonData.videoKey;
+  delete lessonData.documentKey;
+
   res.json({
     success: true,
-    data: lesson,
+    data: lessonData,
+  });
+});
+
+
+// Get playback URL for a selected lesson.
+export const getLessonPlaybackUrl = asyncHandler(async (req, res) => {
+  const { courseId, lessonId } = req.params;
+
+  // Check student enrollment.
+  const enrollment = await Enrollment.findOne({
+  user: req.user._id,
+  course: courseId,
+  status: { $in: ['active', 'completed'] },
+  //Your playback API must enforce the same enrollment rule as your course-content API. Otherwise, a cancelled student could still request a new S3 playback URL.
+
+});
+
+  if (!enrollment) 
+  {
+    res.status(403);
+    throw new Error('You are not enrolled in this course');
+  }
+
+  //Find the selected lesson.
+  const lesson = await Lesson.findOne({
+    _id: lessonId,
+    course: courseId,
+  });
+
+  if (!lesson) 
+  {
+    res.status(404);
+    throw new Error('Lesson not found');
+  }
+
+  // Get the S3 key.
+  const mediaKey =
+    lesson.contentType === 'video'
+      ? lesson.videoKey
+      : lesson.documentKey;
+
+  if (!mediaKey) 
+  {
+    res.status(404);
+    throw new Error('Media file not found');
+  }
+
+  // Generate URL only for this lesson.
+  const { playbackUrl, expiresAt } = await createSignedMediaUrl(mediaKey);
+
+  res.json({
+    success: true,
+    data: {
+        playbackUrl,
+        expiresAt,
+        },
   });
 });

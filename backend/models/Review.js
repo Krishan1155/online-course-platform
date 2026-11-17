@@ -48,7 +48,7 @@ const reviewSchema = new mongoose.Schema(
   }
 );
 
-// One student can review a course only once.
+// One student can review a course only once. (compound unique index)
 reviewSchema.index(
   {
     user: 1,

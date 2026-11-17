@@ -3,7 +3,7 @@ import Progress from '../models/Progress.js';
 import Lesson from '../models/Lesson.js';
 import Enrollment from '../models/Enrollment.js';
 
-/*
+/* Helper function 
   Recalculate progress using the ACTUAL lessons
   currently present in the database.
 */
@@ -32,9 +32,8 @@ const recalculateProgress = async (userId, courseId) => {
   }
 
 
-//  Keep only completed lesson IDs that still exist in the course.
-  
-//  This also protects us if an admin deletes a lesson.
+    // Keep only completed lesson IDs that still exist in the course.
+    // This also protects us if an admin deletes a lesson.
 
   const validCompletedLessons =
     progress.completedLessons.filter((lessonId) => lessonIds.has(lessonId.toString())
@@ -60,7 +59,7 @@ const recalculateProgress = async (userId, courseId) => {
 };
 
 
-// ---->  Mark a lesson as completed
+// --->  Mark a lesson as completed
 
 export const markLessonComplete = asyncHandler(
   async (req, res) => {
@@ -104,12 +103,13 @@ export const markLessonComplete = asyncHandler(
       });
     }
 
-    // Add lesson only if it is not already completed
+    // Check whether the lesson is already completed   
     const alreadyCompleted =
       progress.completedLessons.some(
         (id) => id.toString() === lessonId.toString()
       );
 
+    //Add the lesson if it is not completed
     if (!alreadyCompleted) 
     {
       progress.completedLessons.push(lessonId);
@@ -157,8 +157,7 @@ export const markLessonComplete = asyncHandler(
 );
 
 
- // Get progress of current user for a course
-//Get progress of current user for a course
+ // ---> Get progress of current user for a course
 
 export const getProgress = asyncHandler(
   async (req, res) => {
@@ -181,23 +180,28 @@ export const getProgress = asyncHandler(
       courseId
     );
 
-    let lastPlaybackPosition = 0;
+   let lastPlaybackPosition = 0;
 
-    if (lessonId) 
-    {
-      const lesson = await Lesson.findById(lessonId);
+  if(lessonId) {
+  const lesson = await Lesson.findOne({
+    _id: lessonId,
+    course: courseId,
+  });
 
-      if (!lesson || lesson.course.toString() !== courseId.toString()) 
-      {
-        res.status(404);
-        throw new Error('Lesson not found in this course');
-      }
+  if(!lesson) 
+  {
+    res.status(404);
+    throw new Error('Lesson not found');
+  }
 
-      if (progress.lastAccessedLesson?.toString() === lessonId) 
-      {
-        lastPlaybackPosition = progress.lastPlaybackPosition || 0;
-      }
-    }
+  progress.playbackPositions ||= [];
+
+  const savedPosition = progress.playbackPositions.find(
+  (item) => item.lesson?.toString() === lessonId.toString()
+);
+
+  lastPlaybackPosition = savedPosition?.currentTime || 0;
+}
 
     await progress.populate(
       'completedLessons',
@@ -216,11 +220,32 @@ export const getProgress = asyncHandler(
 
 
 
-// ----> Update the last lesson accessed by the student
+// --->Update the last lesson accessed by the student
 
 export const updateLastAccessed = asyncHandler(
   async (req, res) => {
     const { courseId, lessonId } = req.params;
+
+  const enrollment = await Enrollment.findOne({
+  user: req.user._id,
+  course: courseId,
+});
+
+if (!enrollment) {
+  res.status(403);
+  throw new Error('You are not enrolled in this course');
+}
+
+  const lesson = await Lesson.findOne({
+  _id: lessonId,
+  course: courseId,
+});
+
+    if (!lesson) 
+  {
+     res.status(404);
+     throw new Error('Lesson not found in this course');
+  }
 
     let progress = await Progress.findOne({
       user: req.user._id,
@@ -239,14 +264,12 @@ export const updateLastAccessed = asyncHandler(
     } 
     else 
     {
+      //Update last accessed lesson
       progress.lastAccessedLesson = lessonId;
 
     
       // Recalculate here as well.
-
-      // This means opening a course after an admin
-      //adds lessons will also correct the percentage.
-      
+      // This means opening a course after an admin adds lessons will also correct the percentage.
       const lessons = await Lesson.find({
         course: courseId,
       }).select('_id');
@@ -257,6 +280,8 @@ export const updateLastAccessed = asyncHandler(
         )
       );
 
+
+      //Remove deleted lessons from completedLessons
       progress.completedLessons =
         progress.completedLessons.filter((id) =>
           lessonIds.has(id.toString())
@@ -277,66 +302,78 @@ export const updateLastAccessed = asyncHandler(
 );
 
 
-// ----> Save video playback position
+// ---> Save video playback position
 
-export const savePlaybackPosition = asyncHandler(
-  async (req, res) => {
-    const { courseId, lessonId } = req.params;
-    const { currentTime } = req.body;
+export const savePlaybackPosition = asyncHandler(async (req, res) => {
+  const { courseId, lessonId } = req.params;
+  const { currentTime } = req.body;
 
-    if(typeof currentTime !== 'number' || !Number.isFinite(currentTime) || currentTime < 0) 
-    {
-      res.status(400);
-      throw new Error('Invalid playback position');
-    }
+  if (typeof currentTime !== 'number' || !Number.isFinite(currentTime) || currentTime < 0) 
+  {
+    res.status(400);
+    throw new Error('Invalid playback position');
+  }
 
-    const enrollment = await Enrollment.findOne({
+  const enrollment = await Enrollment.findOne({
+    user: req.user._id,
+    course: courseId,
+  });
+
+  if (!enrollment) 
+  {
+    res.status(403);
+    throw new Error('You are not enrolled in this course');
+  }
+
+  const lesson = await Lesson.findOne({
+    _id: lessonId,
+    course: courseId,
+  });
+
+  if (!lesson) 
+  {
+    res.status(404);
+    throw new Error('Lesson not found');
+  }
+
+  let progress = await Progress.findOne({
+    user: req.user._id,
+    course: courseId,
+  });
+
+  if (!progress) 
+  {
+    progress = new Progress({
       user: req.user._id,
       course: courseId,
     });
+  }
 
-    if (!enrollment) 
-    {
-      res.status(403);
-      throw new Error('You are not enrolled in this course');
-    }
+  const existingPosition = progress.playbackPositions.find(
+    (item) => item.lesson.toString() === lessonId
+  );
 
-    const lesson = await Lesson.findById(lessonId);
-
-    if (!lesson || lesson.course.toString() !== courseId.toString()) 
-    {
-      res.status(404);
-      throw new Error('Lesson not found in this course');
-    }
-
-    const progress = await Progress.findOneAndUpdate(
-      {
-        user: req.user._id,
-        course: courseId,
-      },
-      {
-        $set: {
-          lastAccessedLesson: lessonId,
-          lastPlaybackPosition: currentTime,
-        },
-        $setOnInsert: {
-          completedLessons: [],
-          progressPercentage: 0,
-        },
-      },
-      {
-        new: true,
-        upsert: true,
-        runValidators: true,
-        setDefaultsOnInsert: true,
-      }
-    );
-
-    res.json({
-      success: true,
-      data: {
-        lastPlaybackPosition: progress.lastPlaybackPosition,
-      },
+  if (existingPosition) 
+  {
+    existingPosition.currentTime = currentTime;
+  } 
+  else 
+  {
+    progress.playbackPositions.push({
+      lesson: lessonId,
+      currentTime,
     });
   }
-);
+
+  progress.lastAccessedLesson = lessonId;
+
+  await progress.save();
+
+  res.status(200).json({
+    success: true,
+    data: {
+      lessonId,
+      currentTime,
+    },
+  });
+});

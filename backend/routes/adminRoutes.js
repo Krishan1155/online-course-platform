@@ -3,7 +3,6 @@ import {
   getAllUsers,
   updateUserRole,
   getDashboardStats,
-  createAdminUser,
 } from '../controllers/adminController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
@@ -17,6 +16,5 @@ router.get('/users', getAllUsers);
 
 router.put('/users/:id/role', updateUserRole);
 
-router.post('/create-admin', createAdminUser);
 
 export default router;

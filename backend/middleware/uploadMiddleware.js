@@ -8,26 +8,31 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const uploadsDir = path.join(__dirname, '../uploads');
-const documentsDir = path.join(uploadsDir, 'documents');
 const lessonTempDir = path.join(uploadsDir, 'lesson-temp');
 
 // Ensure upload directories exist.
 for (const directory of [
   uploadsDir,
-  documentsDir,
   lessonTempDir,
 ]) {
   mkdirSync(directory, { recursive: true });
 }
 
-// ---> Existing thumbnail upload: stored locally.
+// =====================================================
+// THUMBNAIL UPLOAD (LOCAL STORAGE)
+// =====================================================
+
 const thumbnailStorage = multer.diskStorage({
   destination: (_req, _file, cb) => {
     cb(null, uploadsDir);
   },
   filename: (_req, file, cb) => {
     const extension = path.extname(file.originalname).toLowerCase();
-    cb(null, `thumbnail-${Date.now()}-${Math.round(Math.random() * 1e9)}${extension}`);
+
+    cb(
+      null,
+      `thumbnail-${Date.now()}-${Math.round(Math.random() * 1e9)}${extension}`
+    );
   },
 });
 
@@ -39,8 +44,7 @@ const imageFilter = (_req, file, cb) => {
     'image/gif',
   ];
 
-  if (allowedTypes.includes(file.mimetype)) 
-  {
+  if (allowedTypes.includes(file.mimetype)) {
     return cb(null, true);
   }
 
@@ -50,46 +54,22 @@ const imageFilter = (_req, file, cb) => {
 export const uploadThumbnail = multer({
   storage: thumbnailStorage,
   fileFilter: imageFilter,
-  limits: { fileSize: 5 * 1024 * 1024 },
-});
-
-//---> Existing document upload: stored locally for backward compatibility.
-const documentStorage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, documentsDir);
-  },
-  filename: (_req, _file, cb) => {
-    cb(null, `document-${Date.now()}-${Math.round(Math.random() * 1e9)}.pdf`);
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5 MB
   },
 });
 
-const pdfFilter = (_req, file, cb) => {
-  const extension = path.extname(file.originalname).toLowerCase();
+// =====================================================
+// LESSON MEDIA UPLOAD (TEMPORARY STORAGE BEFORE S3)
+// =====================================================
 
-  if(file.mimetype === 'application/pdf' && extension === '.pdf') 
-  {
-    return cb(null, true);
-  }
-
-  cb(new Error('Only PDF files are allowed.'));
-};
-
-export const uploadDocument = multer({
-  storage: documentStorage,
-  fileFilter: pdfFilter,
-  limits: { fileSize: 10 * 1024 * 1024 },
-});
-
-// ----> New lesson-media uploads: temporary disk storage before S3 upload.
-
-// Video field: "video"
-// PDF field: "document"
 const lessonMediaStorage = multer.diskStorage({
   destination: (_req, _file, cb) => {
     cb(null, lessonTempDir);
   },
   filename: (_req, file, cb) => {
     const extension = path.extname(file.originalname).toLowerCase();
+
     cb(
       null,
       `lesson-${Date.now()}-${Math.round(Math.random() * 1e9)}${extension}`
@@ -114,24 +94,32 @@ const videoMimeTypes = new Set([
 const lessonMediaFilter = (_req, file, cb) => {
   const extension = path.extname(file.originalname).toLowerCase();
 
-  if (file.fieldname === 'video') 
-  {
-    if(videoExtensions.has(extension) && videoMimeTypes.has(file.mimetype)) 
-    {
+  // Video validation
+  if (file.fieldname === 'video') {
+    if (
+      videoExtensions.has(extension) &&
+      videoMimeTypes.has(file.mimetype)
+    ) {
       return cb(null, true);
     }
 
-    return cb(new Error('Use a supported MP4, WebM, MOV, or M4V video file.'));
+    return cb(
+      new Error('Use a supported MP4, WebM, MOV, or M4V video file.')
+    );
   }
 
-  if (file.fieldname === 'document') 
-  {
-    if (extension === '.pdf' && file.mimetype === 'application/pdf') 
-    {
+  // PDF validation
+  if (file.fieldname === 'document') {
+    if (
+      extension === '.pdf' &&
+      file.mimetype === 'application/pdf'
+    ) {
       return cb(null, true);
     }
+
     return cb(new Error('Only PDF files are allowed.'));
   }
+
   cb(new Error('Unexpected lesson-media field.'));
 };
 
@@ -140,6 +128,6 @@ export const uploadLessonMedia = multer({
   fileFilter: lessonMediaFilter,
   limits: {
     fileSize: 1024 * 1024 * 1024, // Maximum 1 GB per file
-    files: 2,
+    files: 1,
   },
 });

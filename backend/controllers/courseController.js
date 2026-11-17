@@ -6,7 +6,9 @@ import Enrollment from '../models/Enrollment.js';
 import Review from '../models/Review.js';
 import { deleteS3Prefix } from '../utils/s3.js';
 import Progress from '../models/Progress.js';
-
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import mongoose from 'mongoose';
 
 // Update  Course STATISTICS
 
@@ -15,9 +17,8 @@ const updateCourseStats = async (courseId) => {
 
   const totalLessons = lessons.length;
 
-  const totalDuration = lessons.reduce(
-    (sum, lesson) => sum + (lesson.duration || 0),
-    0
+  const totalDuration = lessons.reduce((sum, lesson) => 
+    sum + (lesson.duration || 0),0
   );
 
   await Course.findByIdAndUpdate(courseId, {
@@ -41,14 +42,12 @@ export const getCourses = asyncHandler(async (req, res) => {
   const filter = { isPublished: true };
   const searchText = search?.trim();
 
-  if (searchText) {
-    const escapeRegex = (value) =>
-      value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (searchText) 
+  {
+    //The intention is to escape special regular-expression characters.
+    const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-    const searchRegex = new RegExp(
-      escapeRegex(searchText),
-      'i'
-    );
+    const searchRegex = new RegExp(escapeRegex(searchText),'i');
 
     filter.$or = [
       { title: searchRegex },
@@ -59,9 +58,11 @@ export const getCourses = asyncHandler(async (req, res) => {
   }
 
   if (category) filter.category = category;
+
   if (level) filter.level = level;
 
-  if (minPrice !== undefined && minPrice !== '') {
+  if (minPrice !== undefined && minPrice !== '') 
+  {
     filter.price = {
       ...filter.price,
       $gte: Number(minPrice),
@@ -91,9 +92,7 @@ export const getCourses = asyncHandler(async (req, res) => {
     sortOption = { title: 1 };
   }
 
-  const courses = await Course.find(filter)
-    .sort(sortOption)
-    .populate('createdBy', 'name');
+  const courses = await Course.find(filter).sort(sortOption).populate('createdBy', 'name');
 
   let result = courses;
 
@@ -111,7 +110,7 @@ export const getCourses = asyncHandler(async (req, res) => {
 
     if (title.includes(query)) return 2;
 
-      return 3;
+  return 3;
     };
 
     result = [...courses].sort((a, b) => getRank(a) - getRank(b));
@@ -138,10 +137,10 @@ export const getCourseById = asyncHandler(async (req, res) => {
     throw new Error('Course not found');
   }
 
-  if (!course.isPublished && (!req.user || req.user.role !== 'admin')) 
+  if (!course.isPublished) 
   {
-    res.status(404);
-    throw new Error('Course not found');
+     res.status(404);
+     throw new Error('Course not found');
   }
 
   const modules = await Module.find({
@@ -163,14 +162,14 @@ export const getCourseById = asyncHandler(async (req, res) => {
 
   let isEnrolled = false;
 
-  if (req.user) 
+  if(req.user) 
   {
     const enrollment = await Enrollment.findOne({
       user: req.user._id,
       course: course._id,
     });
 
-    isEnrolled = !!enrollment;
+    isEnrolled = !!enrollment;                                   //The double exclamation mark converts a value to a Boolean.
   }
 
   res.json({
@@ -211,6 +210,7 @@ export const createCourse = asyncHandler(async (req, res) => {
     isPublished,
   } = req.body;
 
+  
   const courseData = {
     title,
     description,
@@ -218,8 +218,7 @@ export const createCourse = asyncHandler(async (req, res) => {
     category,
     level: level || 'beginner',
     instructor,
-    isPublished:
-      isPublished === 'true' || isPublished === true,
+    isPublished: isPublished === 'true' || isPublished === true,                //When data is submitted through FormData, Boolean values commonly arrive as strings.
     createdBy: req.user._id,
   };
 
@@ -257,7 +256,8 @@ export const updateCourse = asyncHandler(async (req, res) => {
     isPublished,
   } = req.body;
 
-  course.title = title ?? course.title;
+
+  course.title = title ?? course.title;                    // ?? operator is called the nullish coalescing operator.
   course.description = description ?? course.description;
   course.price = price !== undefined ? price : course.price;
   course.category = category ?? course.category;
@@ -286,6 +286,7 @@ export const updateCourse = asyncHandler(async (req, res) => {
 // ---> Delete Course
 
 export const deleteCourse = asyncHandler(async (req, res) => {
+
   const course = await Course.findById(req.params.id);
 
   if (!course) 
@@ -295,46 +296,57 @@ export const deleteCourse = asyncHandler(async (req, res) => {
   }
 
   const courseId = course._id;
+  const session = await mongoose.startSession();
 
-  // 1. Find all lessons and their S3 keys
-  const lessons = await Lesson.find({
-    course: courseId,
-  }).select('videoKey documentKey');
+  //Delete all related MongoDB records in one transaction
+  try {
+    await session.withTransaction(async () => {
+      await Lesson.deleteMany({ course: courseId }).session(session);
+      await Module.deleteMany({ course: courseId }).session(session);
+      await Review.deleteMany({ course: courseId }).session(session);
+      await Enrollment.deleteMany({ course: courseId }).session(session);
+      await Progress.deleteMany({ course: courseId }).session(session);
 
-  const s3Keys = [
-    ...new Set(
-      lessons
-        .flatMap((lesson) => [
-          lesson.videoKey,
-          lesson.documentKey,
-        ])
-        .filter(Boolean)
-    ),
-  ];
-
-  // 2. Delete S3 files first.
-  // If this fails, MongoDB deletion will not start.
-  for (const key of s3Keys) {
-    // Delete every S3 object belonging to this course
-await deleteS3Prefix(`courses/${courseId}/`);
+      await Course.deleteOne({ _id: courseId }).session(session);
+    });
+  } 
+  finally {
+    await session.endSession(); //closes the session after the transaction finishes
   }
 
-  // 3. Delete related MongoDB records
-  await Promise.all([
-    Lesson.deleteMany({ course: courseId }),
-    Module.deleteMany({ course: courseId }),
-    Review.deleteMany({ course: courseId }),
-    Enrollment.deleteMany({ course: courseId }),
-    Progress.deleteMany({ course: courseId }),
-  ]);
+  //Delete all S3 files belonging to this course
+  try 
+  {
+  await deleteS3Prefix(`courses/${courseId}/`);
+  } 
+catch (error) 
+{
+  console.error('S3 course cleanup failed:', error);
+}
 
-  // 4. Delete the course
-  await course.deleteOne();
+  //Delete course thumbnail from local uploads folder
+  if (course.thumbnail) {
+    const thumbnailFilename = path.basename(course.thumbnail);
 
-  res.json({
+    const thumbnailPath = path.join(
+      process.cwd(),
+      'uploads',
+      thumbnailFilename
+    );
+
+    try {
+      await fs.unlink(thumbnailPath);
+    } 
+    catch (error) {
+      if (error.code !== 'ENOENT') {
+        console.error('Thumbnail cleanup failed:', error);
+      }
+    }
+  }
+
+  res.status(200).json({
     success: true,
-    message:
-      'Course, related MongoDB records, and associated S3 files deleted successfully',
+    message: 'Course and all related records deleted successfully',
   });
 });
 
@@ -342,8 +354,10 @@ await deleteS3Prefix(`courses/${courseId}/`);
 // Get Admin Courses
 
 export const getAdminCourses = asyncHandler(async (req, res) => {
+
   const courses = await Course.find()
-    .sort({ createdAt: -1 })
+    //newest first
+    .sort({ createdAt: -1 })    
     .populate('createdBy', 'name');
 
   res.json({

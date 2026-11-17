@@ -16,6 +16,7 @@ const moduleSchema = new mongoose.Schema(
       type: Number,
       required: true,
       default: 0,
+      min: [0, 'Module order cannot be negative']
     },
   },
   { timestamps: true }

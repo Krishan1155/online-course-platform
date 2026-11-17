@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../../api/axios';
-import { useAuth } from '../../context/AuthContext';
 import Alert from '../../components/Alert';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
@@ -11,7 +10,6 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { setToken } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -24,15 +22,23 @@ const ResetPassword = () => {
     }
 
     setLoading(true);
-    try {
-      const { data } = await api.put(`/auth/reset-password/${token}`, { password });
-      setToken(data.data.token);
-      navigate('/');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+   try {
+  await api.put(`/auth/reset-password/${token}`, { password });
+
+  navigate('/login', {
+    state: {
+      message: 'Password reset successful. Please login with your new password.',
+    },
+  });
+} catch (err) {
+  setError(
+    err.response?.data?.message ||
+    err.message ||
+    'Password reset failed'
+  );
+} finally {
+  setLoading(false);
+}
   };
 
   return (

@@ -5,7 +5,6 @@ import Course from '../models/Course.js';
 import Progress from '../models/Progress.js';
 import Module from '../models/Module.js';
 import Lesson from '../models/Lesson.js';
-import { createSignedMediaUrl } from '../utils/s3.js';
 
 const recalculateProgress = async (userId, courseId) => {
 
@@ -91,8 +90,10 @@ export const enrollFreeCourse = asyncHandler(async (req, res) => {
   });
 });
 
+
 // ---> Get courses of current student.
 export const getMyEnrollments = asyncHandler(async (req, res) => {
+
   const enrollments = await Enrollment.find({
     user: req.user._id,
   })
@@ -151,9 +152,10 @@ export const getCourseContent = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
 
   const enrollment = await Enrollment.findOne({
-    user: req.user._id,
-    course: courseId,
-  });
+  user: req.user._id,
+  course: courseId,
+  status: { $in: ['active', 'completed'] },
+});
 
   if (!enrollment) 
   {
@@ -184,23 +186,14 @@ export const getCourseContent = asyncHandler(async (req, res) => {
         module: mod._id,
       }).sort({ order: 1 });
 
-      const lessonsWithMedia = await Promise.all(
-        lessons.map(async (lesson) => {
-          const lessonData = lesson.toObject();
+    const lessonsWithMedia = lessons.map((lesson) => {
+     const lessonData = lesson.toObject();
 
-          if (lesson.videoKey) 
-          {
-            lessonData.videoPlaybackUrl = await createSignedMediaUrl(lesson.videoKey);
-          }
+     delete lessonData.videoKey;
+     delete lessonData.documentKey; 
 
-          if (lesson.documentKey) 
-          {
-            lessonData.documentPlaybackUrl = await createSignedMediaUrl(lesson.documentKey);
-          }
-
-          return lessonData;
-        })
-      );
+     return lessonData;
+});
 
       return {
         ...mod.toObject(),

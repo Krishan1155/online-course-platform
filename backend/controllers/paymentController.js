@@ -6,6 +6,8 @@ import Payment from '../models/Payment.js';
 import Enrollment from '../models/Enrollment.js';
 import Progress from '../models/Progress.js';
 
+
+//helper function 
 const getRazorpayInstance = () => {
   return new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -13,10 +15,13 @@ const getRazorpayInstance = () => {
   });
 };
 
+
+//
 export const createOrder = asyncHandler(async (req, res) => {
   const { courseId } = req.body;
 
   const course = await Course.findById(courseId);
+
   if (!course) 
   {
     res.status(404);
@@ -63,14 +68,19 @@ export const createOrder = asyncHandler(async (req, res) => {
       orderId: order.id,
       amount: order.amount,
       currency: order.currency,
-      keyId: process.env.RAZORPAY_KEY_ID,
+      //The Razorpay Checkout integration needs the public Key ID to initialize the payment window.
+      keyId: process.env.RAZORPAY_KEY_ID,  
       paymentId: payment._id,
       courseTitle: course.title,
     },
   });
 });
 
-export const verifyPayment = asyncHandler(async (req, res) => {
+
+
+/*it verifies the payment signature and, if valid, 
+ marks the payment as paid and creates the student's course enrollment.*/
+ export const verifyPayment = asyncHandler(async (req, res) => {
   const {
     razorpay_order_id,
     razorpay_payment_id,
@@ -78,7 +88,9 @@ export const verifyPayment = asyncHandler(async (req, res) => {
     paymentId,
   } = req.body;
 
+  // Razorpay's signature verification process uses this exact combination
   const body = `${razorpay_order_id}|${razorpay_payment_id}`;
+
   const expectedSignature = crypto
     .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
     .update(body)
@@ -104,6 +116,7 @@ if (payment.razorpayOrderId !== razorpay_order_id)
   throw new Error('Order ID mismatch');
 }
 
+//Prevent duplicate verification
 if (payment.status === 'paid') 
 {
   res.status(400);
@@ -151,6 +164,8 @@ await payment.save();
   });
 });
 
+
+
 export const getPaymentHistory = asyncHandler(async (req, res) => {
   const payments = await Payment.find({ user: req.user._id })
     .populate('course', 'title thumbnail')
@@ -158,6 +173,7 @@ export const getPaymentHistory = asyncHandler(async (req, res) => {
 
   res.json({ success: true, data: payments });
 });
+
 
 export const getAllPayments = asyncHandler(async (req, res) => {
   const payments = await Payment.find({ status: 'paid' })

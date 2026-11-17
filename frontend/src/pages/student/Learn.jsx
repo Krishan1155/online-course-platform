@@ -42,63 +42,6 @@ const getBackendUrl = (url) => {
 
 };
 
-// =====================================================
-
-// YOUTUBE URL
-
-// =====================================================
-
-const getEmbedUrl = (url) => {
-
-  if (!url) {
-
-    return '';
-
-  }
-
-  if (url.includes('/embed/')) {
-
-    return url;
-
-  }
-
-  try {
-
-    const parsedUrl = new URL(url);
-
-    if (parsedUrl.hostname.includes('youtube.com')) {
-
-      const videoId = parsedUrl.searchParams.get('v');
-
-      if (videoId) {
-
-        return `https://www.youtube.com/embed/${videoId}`;
-
-      }
-
-    }
-
-    if (parsedUrl.hostname === 'youtu.be') {
-
-      const videoId = parsedUrl.pathname.substring(1);
-
-      if (videoId) {
-
-        return `https://www.youtube.com/embed/${videoId}`;
-
-      }
-
-    }
-
-  } catch {
-
-    return url;
-
-  }
-
-  return url;
-
-};
 
 // =====================================================
 
@@ -166,6 +109,25 @@ const Learn = () => {
 
   const [savedPlaybackPosition, setSavedPlaybackPosition] = useState(0);
   const lastSavedTimeRef = useRef(0);
+
+  const [playbackReady, setPlaybackReady] = useState(false); //Continues to manage the saved playback position as before.
+
+  const [playbackUrl, setPlaybackUrl] = useState(''); //Stores the presigned URL for the currently selected lesson.
+  const [playbackUrlLoading, setPlaybackUrlLoading] = useState(false); //Shows a loading message while the backend generates the URL.
+
+
+
+  const playbackCache = useRef(new Map());   // This cache will store URLs by lesson ID and their expiry timestamps.
+
+
+  const videoRef = useRef(null);
+  const pendingPlaybackRestoreRef = useRef(null);
+  const refreshingPlaybackRef = useRef(false);
+  const wasPlayingRef = useRef(false);
+  const playbackRetryRef = useRef(false);
+  const playbackRequestIdRef = useRef(0);
+
+
 
   // ===================================================
 
@@ -354,6 +316,154 @@ const Learn = () => {
   }, [courseId]);
 
 
+  
+
+  const refreshPlaybackUrl = async (shouldResume = true) => {
+  if (!courseId || !activeLesson?._id) return;
+  if (refreshingPlaybackRef.current) return;
+
+  const requestId = ++playbackRequestIdRef.current;
+const lessonId = activeLesson._id;
+
+  refreshingPlaybackRef.current = true;
+
+  const video = videoRef.current;
+  const currentTime = video
+    ? video.currentTime
+    : savedPlaybackPosition;
+
+  try {
+    const { data } = await api.get(
+      `/lessons/${courseId}/${lessonId}/playback-url`
+    );
+
+    if (requestId !== playbackRequestIdRef.current) 
+    {
+       return;
+     }
+
+    const { playbackUrl, expiresAt } = data.data || {};
+
+    if (!playbackUrl || !expiresAt) {
+      throw new Error('New playback URL was not returned');
+    }
+
+    playbackCache.current.set(lessonId, {
+      playbackUrl,
+      expiresAt,
+    });
+
+    pendingPlaybackRestoreRef.current = {
+      currentTime,
+      shouldResume,
+    };
+
+    setPlaybackUrl(playbackUrl);
+    setError('');
+    } catch (err) {
+    if (requestId === playbackRequestIdRef.current) {
+      setError(
+        err.response?.data?.message ||
+        'Unable to refresh video access. Please try again.'
+      );
+    }
+  } finally {
+    if (requestId === playbackRequestIdRef.current) {
+      refreshingPlaybackRef.current = false;
+    }
+  }
+};
+
+
+// ===================================================
+// LOAD SELECTED LESSON MEDIA URL
+// ===================================================
+
+useEffect(() => {
+  if (!courseId || !activeLesson?._id) {
+    setPlaybackUrl('');
+    setPlaybackUrlLoading(false);
+    return;
+  }
+
+  const isVideo = activeLesson.contentType === 'video';
+
+  const isS3Pdf =
+    activeLesson.contentType === 'document' &&
+    activeLesson.documentType === 'pdf' &&
+    !activeLesson.documentUrl;
+
+  if (!isVideo && !isS3Pdf) {
+    setPlaybackUrl('');
+    setPlaybackUrlLoading(false);
+    return;
+  }
+
+  let cancelled = false;
+
+  const fetchPlaybackUrl = async () => {
+    try {
+      setPlaybackUrlLoading(true);
+      setError('');
+
+      const cached = playbackCache.current.get(activeLesson._id);
+
+      // Reuse cached URL if it is still valid.
+      if (cached && cached.expiresAt > Date.now() + 60000) {
+        if (!cancelled) {
+          setPlaybackUrl(cached.playbackUrl);
+        }
+        return;
+      }
+
+      const { data } = await api.get(
+        `/lessons/${courseId}/${activeLesson._id}/playback-url`
+      );
+
+      const { playbackUrl, expiresAt } = data.data || {};
+
+      if (!playbackUrl || !expiresAt) {
+        throw new Error('Playback URL or expiry was not returned');
+      }
+
+
+      if (!cancelled) {
+        playbackCache.current.set(activeLesson._id, {
+        playbackUrl,
+        expiresAt,
+      });
+        setPlaybackUrl(playbackUrl);
+      }
+    } catch (err) {
+      if (!cancelled) {
+        setPlaybackUrl('');
+        setError(
+          err.response?.data?.message ||
+          err.message ||
+          'Failed to load lesson media. Please try again.'
+        );
+      }
+    } finally {
+      if (!cancelled) {
+        setPlaybackUrlLoading(false);
+      }
+    }
+  };
+
+  fetchPlaybackUrl();
+
+  return () => {
+    cancelled = true;
+  };
+}, [
+  courseId,
+  activeLesson?._id,
+  activeLesson?.contentType,
+  activeLesson?.documentType,
+  activeLesson?.documentUrl,
+]);
+
+
 
   // Load saved playback position whenever the selected lesson changes
   useEffect(() => {
@@ -362,35 +472,38 @@ const Learn = () => {
     let cancelled = false;
 
     const loadPlaybackPosition = async () => {
+  setPlaybackReady(false);
+  setSavedPlaybackPosition(0);
+  lastSavedTimeRef.current = 0;
+
+  try {
+    const { data } = await api.get(
+      `/progress/${courseId}?lessonId=${activeLesson._id}`
+    );
+
+    if (!cancelled) {
+      const position = Number(
+        data.data?.lastPlaybackPosition || 0
+      );
+
+      setSavedPlaybackPosition(position);
+      lastSavedTimeRef.current = position;
+      setPlaybackReady(true);
+    }
+  } catch (err) {
+    if (!cancelled) {
       setSavedPlaybackPosition(0);
-      lastSavedTimeRef.current = 0;
+      setPlaybackReady(true);
+    }
+  }
+};
+  loadPlaybackPosition();
 
-      try {
-        const { data } = await api.get(
-          `/progress/${courseId}?lessonId=${activeLesson._id}`
-        );
+  return () => {
+    cancelled = true;
+  };
+}, [courseId, activeLesson?._id]);
 
-        if (!cancelled) {
-          const position = Number(
-            data.data?.lastPlaybackPosition || 0
-          );
-
-          setSavedPlaybackPosition(position);
-          lastSavedTimeRef.current = position;
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setSavedPlaybackPosition(0);
-        }
-      }
-    };
-
-    loadPlaybackPosition();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [courseId, activeLesson?._id]);
 
   // ===================================================
 
@@ -418,9 +531,26 @@ const Learn = () => {
 
   // ===================================================
 
-  const handleSelectLesson = async (lesson, moduleId) => {
+ 
 
-    setActiveLesson(lesson);
+  const handleSelectLesson = async (lesson, moduleId) => {
+    
+  if (String(activeLesson?._id) === String(lesson._id)) {
+    return;
+  }
+
+   playbackRequestIdRef.current += 1;
+   refreshingPlaybackRef.current = false;
+
+  setPlaybackReady(false);
+  playbackRetryRef.current = false;
+  wasPlayingRef.current = false;
+
+  // Clear the previous lesson's media URL.
+  setPlaybackUrl('');
+  setPlaybackUrlLoading(false);
+
+  setActiveLesson(lesson);
 
     if (moduleId) {
 
@@ -584,13 +714,8 @@ const Learn = () => {
 
   // ===================================================
 
-  const documentUrl = activeLesson?.documentPlaybackUrl ||
-
-    (activeLesson?.documentUrl
-
-      ? getBackendUrl(activeLesson.documentUrl)
-
-      : '');
+  const documentUrl =playbackUrl || (activeLesson?.documentUrl ? 
+    getBackendUrl(activeLesson.documentUrl): '');
 
   const completed = activeLesson
 
@@ -805,85 +930,101 @@ const Learn = () => {
 
                 <div className="aspect-video">
 
-                  {activeLesson.videoUrl?.includes('youtube') ||
+  {playbackUrlLoading || !playbackReady ? (
+    <div className="flex aspect-video items-center justify-center text-white">
+      Loading video...
+    </div>
+  ) : playbackUrl ? (
+    <video
+      key={activeLesson._id}
+      src={playbackUrl}
+      controls
+      ref={videoRef}
 
-                    activeLesson.videoUrl?.includes('youtu.be') ? (
+      onEnded={() => handleMarkComplete()}
 
-                    <iframe
+      onPlay={() => {
+        wasPlayingRef.current = true;
+      }}
 
-                      src={getEmbedUrl(activeLesson.videoUrl)}
+      onError={() => {
+        if (playbackRetryRef.current) {
+          setError('Video could not be loaded. Please try again later.');
+          return;
+        }
 
-                      title={activeLesson.title}
+        playbackRetryRef.current = true;
+        refreshPlaybackUrl(wasPlayingRef.current);
+      }}
+      className="h-full w-full"
+      onLoadedMetadata={(e) => {
+        playbackRetryRef.current = false;
 
-                      className="h-full w-full"
+        const video = e.currentTarget;
+        const pending = pendingPlaybackRestoreRef.current;
 
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        if (pending) {
+          video.currentTime = pending.currentTime;
 
-                      allowFullScreen
+          if (pending.shouldResume) 
+          {
+            video.play().catch((err) => {
+              console.error('Video resume failed:', err);
+            });
+          }
 
-                    />
+          pendingPlaybackRestoreRef.current = null;
+          return;
+        }
 
-                  ) : (
+        if (savedPlaybackPosition > 0 && savedPlaybackPosition < video.duration) 
+        {
+          video.currentTime = savedPlaybackPosition;
+        }
+      }}
 
-                    <video
+      onTimeUpdate={async (e) => {
+        const video = e.currentTarget;
+        const currentTime = Math.floor(video.currentTime);
 
-                      src={activeLesson.videoPlaybackUrl || getBackendUrl(activeLesson.videoUrl)}
+        if (Math.abs(currentTime - lastSavedTimeRef.current) >= 20) 
+        {
+          lastSavedTimeRef.current = currentTime;
 
-                      controls
+          try {
+            await api.put(
+              `/progress/${courseId}/lesson/${activeLesson._id}/playback`,
+              { currentTime }
+            );
+          } catch (err) {
+            console.error('Failed to save playback position:', err);
+          }
+        }
+      }}
 
-                      onEnded={() => handleMarkComplete()}
+      onPause={async (e) => {
+        wasPlayingRef.current = false;
 
-                      className="h-full w-full"
+        const currentTime = Math.floor(e.currentTarget.currentTime);
+        lastSavedTimeRef.current = currentTime;
 
-                      onLoadedMetadata={(e) => {
-                        const video = e.currentTarget;
+        try {
+          await api.put(
+            `/progress/${courseId}/lesson/${activeLesson._id}/playback`,
+            { currentTime }
+          );
+        } catch (err) {
+          console.error('Failed to save playback position:', err);
+        }
+      }}
+    />
+  ) : (
+    <div className="flex aspect-video items-center justify-center text-white">
+      Video could not be loaded.
+    </div>
+  )}
 
-                        if (
-                          savedPlaybackPosition > 0 &&
-                          savedPlaybackPosition < video.duration
-                        ) {
-                          video.currentTime = savedPlaybackPosition;
-                        }
-                      }}
-
-                      onTimeUpdate={async (e) => {
-                        const video = e.currentTarget;
-                        const currentTime = Math.floor(video.currentTime);
-
-                        if (Math.abs(currentTime - lastSavedTimeRef.current) >= 5) {
-                          lastSavedTimeRef.current = currentTime;
-
-                          try {
-                            await api.put(
-                              `/progress/${courseId}/lesson/${activeLesson._id}/playback`,
-                              { currentTime }
-                            );
-                          } catch (err) {
-                            console.error('Failed to save playback position:', err);
-                          }
-                        }
-                      }}
-
-                      onPause={async (e) => {
-                        const currentTime = Math.floor(e.currentTarget.currentTime);
-
-                        lastSavedTimeRef.current = currentTime;
-
-                        try {
-                          await api.put(
-                            `/progress/${courseId}/lesson/${activeLesson._id}/playback`,
-                            { currentTime }
-                          );
-                        } catch (err) {
-                          console.error('Failed to save playback position:', err);
-                        }
-                      }}
-
-                    />
-
-                  )}
-
-                </div>
+</div>
 
               ) : activeLesson.contentType === 'document' ? (
 
@@ -893,27 +1034,21 @@ const Learn = () => {
 
                     <div>
 
-                      {documentUrl ? (
-
-                        <iframe
-
-                          src={documentUrl}
-
-                          title={activeLesson.title}
-
-                          className="h-[65vh] min-h-[420px] w-full"
-
-                        />
-
-                      ) : (
-
-                        <div className="flex min-h-[400px] items-center justify-center text-slate-500">
-
-                          PDF not available
-
-                        </div>
-
-                      )}
+                      {playbackUrlLoading ? (
+  <div className="flex min-h-[400px] items-center justify-center">
+    Loading PDF...
+  </div>
+) : documentUrl ? (
+  <iframe
+    src={documentUrl}
+    title={activeLesson.title}
+    className="h-[65vh] min-h-[420px] w-full"
+  />
+) : (
+  <div className="flex min-h-[400px] items-center justify-center">
+    PDF not available
+  </div>
+)}
 
                       <div className="flex flex-wrap gap-3 border-t p-4">
 

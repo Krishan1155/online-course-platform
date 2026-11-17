@@ -5,6 +5,7 @@ import Course from '../models/Course.js';
 import Payment from '../models/Payment.js';
 
 
+// getAllUSers
 
 export const getAllUsers = asyncHandler(async (req, res) => {
   const users = await User.find()
@@ -15,6 +16,7 @@ export const getAllUsers = asyncHandler(async (req, res) => {
 });
 
 
+// UpdateUserRole
 
 export const updateUserRole = asyncHandler(async (req, res) => {
   const { role } = req.body;
@@ -52,15 +54,23 @@ export const updateUserRole = asyncHandler(async (req, res) => {
   user.role = role;
   await user.save();
 
-  const safeUser = user.toObject();
-  delete safeUser.password;
+  const safeUser = {
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  isVerified: user.isVerified,
+  createdAt: user.createdAt,
+};
 
   res.json({ success: true, data: safeUser });
 });
 
 
+// getDashboardStats
 
 export const getDashboardStats = asyncHandler(async (req, res) => {
+
   const totalUsers = await User.countDocuments();
   const totalStudents = await User.countDocuments({ role: 'student' });
   const totalCourses = await Course.countDocuments();
@@ -71,6 +81,7 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
     { $match: { status: 'paid' } },
     { $group: { _id: null, total: { $sum: '$amount' } } },
   ]);
+
   const totalRevenue = revenueResult[0]?.total || 0;
 
   res.json({
@@ -82,35 +93,6 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
       publishedCourses,
       totalEnrollments,
       totalRevenue,
-    },
-  });
-});
-
-export const createAdminUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
-
-  const exists = await User.findOne({ email });
-  if (exists) 
-  {
-    res.status(400);
-    throw new Error('User already exists');
-  }
-
-  const user = await User.create({
-    name,
-    email,
-    password,
-    role: 'admin',
-    isVerified: true,
-  });
-
-  res.status(201).json({
-    success: true,
-    data: {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
     },
   });
 });

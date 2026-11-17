@@ -23,11 +23,20 @@ const progressSchema = new mongoose.Schema(
       ref: 'Lesson',
     },
 
-    lastPlaybackPosition: {
-    type: Number,
-    default: 0,
-    min: 0,
+    playbackPositions: [
+  {
+    lesson: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Lesson',
+      required: true,
     },
+    currentTime: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+  },
+],
     
     progressPercentage: {
       type: Number,

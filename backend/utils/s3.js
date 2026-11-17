@@ -5,14 +5,17 @@ import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
-  GetObjectCommand,
   ListObjectsV2Command,
   DeleteObjectsCommand,
 } from '@aws-sdk/client-s3';
 
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { getSignedUrl as getCloudFrontSignedUrl } from '@aws-sdk/cloudfront-signer';
+
+import { readFile,stat} from 'node:fs/promises';
+
 import { createReadStream } from 'node:fs';
-import { stat } from 'node:fs/promises';
+
+import path from 'node:path';
 
 
 const bucket = process.env.AWS_S3_BUCKET_NAME;
@@ -30,25 +33,22 @@ export const s3 = new S3Client({
   },
 });
 
-export const uploadToS3 = async ({
-  filePath,
-  key,
-  contentType,
-}) => {
-  const fileStats = await stat(filePath);
+export const uploadToS3 = async ({filePath,key,contentType,}) => {
+
+  const fileStats = await stat(filePath);  //gets information about the local file. suppose your video size is 100 MB.
 
   await s3.send(
     new PutObjectCommand({
       Bucket: bucket,
       Key: key,
       Body: createReadStream(filePath),
-      ContentLength: fileStats.size,
+      ContentLength: fileStats.size, 
       ContentType: contentType,
     })
   );
-
   return key;
 };
+
 
 export const deleteFromS3 = async (key) => {
 
@@ -62,18 +62,46 @@ export const deleteFromS3 = async (key) => {
   );
 };
 
+
 export const createSignedMediaUrl = async (key) => {
 
-  if (!key) return '';
+  if (!key) return null;
 
-  return getSignedUrl(
-    s3,
-    new GetObjectCommand({
-      Bucket: bucket,
-      Key: key,
-    }),
-    { expiresIn: 3600 }
-  );
+  const expiresIn = 15*60; // 900 sec => 15min
+
+  const domain = process.env.CLOUDFRONT_DOMAIN; //Your CloudFront distribution domain
+  const keyPairId = process.env.CLOUDFRONT_PUBLIC_KEY_ID; //ID of the CloudFront public key used for verification
+  const privateKeyPath = process.env.CLOUDFRONT_PRIVATE_KEY_PATH; //Location of the corresponding private key file
+
+
+  if (!domain || !keyPairId || !privateKeyPath) 
+  {
+    throw new Error('Missing CloudFront configuration');
+  }
+
+
+  const resolvedKeyPath = path.resolve(process.cwd(), privateKeyPath);
+  const privateKey = await readFile(resolvedKeyPath, 'utf8'); //Reads the file as text.
+  
+
+  const url = `https://${domain}/${key
+    .split('/')
+    .map(encodeURIComponent)
+    .join('/')}`;
+
+  const expiresAt = Date.now() + expiresIn * 1000;
+
+  const playbackUrl = getCloudFrontSignedUrl({
+    url,
+    keyPairId,
+    privateKey,
+    dateLessThan: new Date(expiresAt).toISOString(),
+  });
+
+  return {
+    playbackUrl,
+    expiresAt,
+  };
 };
 
 
@@ -95,9 +123,7 @@ export const deleteS3Prefix = async (prefix) => {
       })
     );
 
-    const objects = (listed.Contents || [])
-      .map((item) => ({ Key: item.Key }))
-      .filter((item) => item.Key);
+    const objects=(listed.Contents || []).map((item) => ({ Key: item.Key })).filter((item) => item.Key);
 
     if (objects.length > 0) 
     {

@@ -5,11 +5,14 @@ import Lesson from '../models/Lesson.js';
 import { updateCourseStats } from './courseController.js';
 import { deleteFromS3 } from '../utils/s3.js';
 
+
+// ---> create Module
+
 export const createModule = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
   const { title, order } = req.body;
 
-  const course = await Course.findById(courseId);
+  const course = await Course.findById(courseId);        
   
   if (!course) 
   {
@@ -18,6 +21,7 @@ export const createModule = asyncHandler(async (req, res) => {
   }
 
   const moduleCount = await Module.countDocuments({ course: courseId });
+
   const module = await Module.create({
     course: courseId,
     title,
@@ -26,6 +30,10 @@ export const createModule = asyncHandler(async (req, res) => {
 
   res.status(201).json({ success: true, data: module });
 });
+
+
+
+//---> Update Module
 
 export const updateModule = asyncHandler(async (req, res) => {
   let module = await Module.findById(req.params.id);
@@ -44,6 +52,8 @@ export const updateModule = asyncHandler(async (req, res) => {
 });
 
 
+//---> Delete Module
+
 export const deleteModule = asyncHandler(async (req, res) => {
   const module = await Module.findById(req.params.id);
 
@@ -60,22 +70,18 @@ export const deleteModule = asyncHandler(async (req, res) => {
     module: module._id,
   }).select('videoKey documentKey');
 
-  // Collect video and document keys stored in S3
-  const s3Keys = [
-    ...new Set(
-      lessons
-        .flatMap((lesson) => [
-          lesson.videoKey,
-          lesson.documentKey,
-        ])
-        .filter(Boolean)
-    ),
-  ];
 
-  // Delete S3 objects first
-  for (const key of s3Keys) 
+  // Delete S3 files
+  for(const lesson of lessons) 
   {
-    await deleteFromS3(key);
+     if(lesson.videoKey) 
+    {
+      await deleteFromS3(lesson.videoKey);
+    }
+    else if(lesson.documentKey) 
+    {
+      await deleteFromS3(lesson.documentKey);
+    }
   }
 
   // Delete lesson and module records
@@ -87,11 +93,12 @@ export const deleteModule = asyncHandler(async (req, res) => {
 
   res.json({
     success: true,
-    message:
-      'Module, lessons, and associated S3 files deleted successfully',
+    message:'Module, lessons, and associated S3 files deleted successfully',
   });
 });
 
+
+//---> getModule by ID
 
 export const getModulesByCourse = asyncHandler(async (req, res) => {
   const modules = await Module.find({ course: req.params.courseId }).sort({ order: 1 });

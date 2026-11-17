@@ -1,5 +1,5 @@
 import { useState} from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation} from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
 import Alert from '../../components/Alert';
@@ -12,6 +12,9 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const { login,googleLogin} = useAuth();
   const navigate = useNavigate();
+
+  const location = useLocation();
+  const successMessage = location.state?.message;
 
   const handleGoogleSuccess = async (credentialResponse) => {
   setError('');
@@ -56,6 +59,7 @@ const Login = () => {
           <h1 className="mb-2 text-2xl font-bold text-gray-900">Welcome back</h1>
           <p className="mb-6 text-sm text-gray-500">Sign in to continue learning</p>
 
+          <Alert type="success" message={successMessage} />
           <Alert type="error" message={error} onClose={() => setError('')} />
 
           <form onSubmit={handleSubmit} className="space-y-4">

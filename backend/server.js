@@ -1,13 +1,18 @@
+
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import fs from 'fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import fs from 'node:fs';
+import cookieParser from 'cookie-parser';
 
 import connectDB from './config/db.js';
 
-import {notFound,errorHandler} from './middleware/errorMiddleware.js';
+import {
+  notFound,
+  errorHandler,
+} from './middleware/errorMiddleware.js';
 
 import authRoutes from './routes/authRoutes.js';
 import courseRoutes from './routes/courseRoutes.js';
@@ -19,11 +24,10 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 
-
 dotenv.config();
 
 
-//  ----> Paths
+// PATH CONFIGURATION
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -31,125 +35,95 @@ const __dirname = path.dirname(__filename);
 
 const uploadsDir = path.join(__dirname, 'uploads');
 
-const paymentsUploadDir =path.join(uploadsDir,'payments');
 
-const documentsUploadDir = path.join(uploadsDir,'documents');
-
-
-// CREATE UPLOAD DIRECTORIES
-
+// Ensure uploads directory exists
 if (!fs.existsSync(uploadsDir)) 
 {
-  fs.mkdirSync(
-    uploadsDir,
-    {
-      recursive: true,
-    }
-  );
-}
-
-if (!fs.existsSync(paymentsUploadDir)) {
-  fs.mkdirSync(
-    paymentsUploadDir,
-    {
-      recursive: true,
-    }
-  );
-}
-
-if (!fs.existsSync(documentsUploadDir)) {
-  fs.mkdirSync(
-    documentsUploadDir,
-    {
-      recursive: true,
-    }
-  );
+  fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
 
-// ---> Database
-
+// DATABASE
 
 connectDB();
 
 
-// ---> Express
-
+// EXPRESS APP
 
 const app = express();
 
-// ----> Middleware
 
+// MIDDLEWARE
 
-app.use(cors({origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true}));
-
-app.use(express.json());
-
-app.use(express.urlencoded({extended: true}));
-
-
-// ---> Static Uploads
-
-app.use('/uploads',express.static(uploadsDir));
-
-
-// ---> Health Check
-
-app.get('/api/health',(req, res) => {
-    res.json({
-      success: true,
-      message: 'Course Platform API is running',
-    });
-  }
+// CORS
+app.use(cors({
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    credentials: true,
+  })
 );
 
+// Parse JSON requests
+app.use(express.json());
 
-// ---> Routes
+// Parse URL-encoded requests
+app.use(express.urlencoded({ extended: true }));
 
-app.use('/api/auth',authRoutes);
-
-app.use('/api/courses',courseRoutes);
-
-app.use('/api/modules',moduleRoutes);
-
-app.use('/api/lessons',lessonRoutes);
-
-app.use('/api/enrollments',enrollmentRoutes);
-
-app.use('/api/progress',progressRoutes);
-
-app.use('/api/payments',paymentRoutes);
-
-app.use('/api/admin',adminRoutes);
-
-// ---> Course Review
-app.use('/api/reviews',reviewRoutes);
+// Parse HTTP-only cookies
+app.use(cookieParser());
 
 
-// ---> Error Handling
+// STATIC FILES
+
+app.use('/uploads', express.static(uploadsDir));
+
+
+// HEALTH CHECK
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Course Platform API is running',
+  });
+});
+
+
+// API ROUTES
+
+app.use('/api/auth', authRoutes);
+app.use('/api/courses', courseRoutes);
+app.use('/api/modules', moduleRoutes);
+app.use('/api/lessons', lessonRoutes);
+app.use('/api/enrollments', enrollmentRoutes);
+app.use('/api/progress', progressRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/reviews', reviewRoutes);
+
+
+// ERROR HANDLING
 
 app.use(notFound);
-
 app.use(errorHandler);
 
 
-// ---> Server
+
+// SERVER
 
 const PORT = process.env.PORT || 5001;
 
-const server = app.listen(PORT,() => {
-      console.log(`Server running on port ${PORT}`);
-    }
-  );
+const server = app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
-server.on('error',(error) => {
-    if(error.code === 'EADDRINUSE') 
-    {
-      console.error(`Port ${PORT} is already in use. Change PORT in backend/.env or stop the process using that port.`);
-      process.exit(1);
-    }
-    throw error;
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(
+      `Port ${PORT} is already in use. Change PORT in backend/.env or stop the process using that port.`
+    );
+    process.exit(1);
   }
-);
+
+  throw error;
+});
 
 export default app;

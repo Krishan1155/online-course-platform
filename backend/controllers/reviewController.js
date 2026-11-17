@@ -49,7 +49,9 @@ const updateCourseRating = async (courseId) => {
   });
 };
 
-// -----> Get Course Review
+
+
+// --->Get Course Review  
 // Public
 
 export const getCourseReviews = asyncHandler(async (req, res) => {
@@ -79,7 +81,7 @@ export const getCourseReviews = asyncHandler(async (req, res) => {
   const safeReviews = reviews.map((review) => ({
     _id: review._id,
     rating: review.rating,
-    comment: review.comment,
+    comment: review.comment,  
     user: review.user,
     createdAt: review.createdAt,
     helpfulCount: review.helpfulBy.length,
@@ -152,7 +154,7 @@ export const createReview = asyncHandler(async (req, res) => {
     throw new Error('Rating must be between 1 and 5');
   }
 
-  if (!comment || !comment.trim()) 
+  if (typeof comment !== 'string' || !comment.trim()) 
   {
     res.status(400);
     throw new Error('Review comment is required');
@@ -179,7 +181,7 @@ export const createReview = asyncHandler(async (req, res) => {
 });
 
 
-// -----> Update Own Review
+// ---> Update Own Review
 
 export const updateReview = asyncHandler(async (req, res) => {
   const {reviewId} = req.params;
@@ -267,7 +269,7 @@ export const deleteReview = asyncHandler(async (req, res) => {
 export const markReviewHelpful=asyncHandler(
   async (req, res) => {
     const {reviewId}=req.params;
-    const {helpful}=req.body;
+    const {helpful}=req.body;         // true or false
 
     const review=await Review.findById(reviewId);
 
@@ -278,6 +280,8 @@ export const markReviewHelpful=asyncHandler(
     }
 
     const userId=req.user._id;
+
+    //Remove the user's previous votes
 
     review.helpfulBy = review.helpfulBy.filter(
       (id) => id.toString() !== userId.toString()

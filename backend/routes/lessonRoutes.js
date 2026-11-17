@@ -1,13 +1,21 @@
 
 import express from 'express';
 
-import {createLesson,updateLesson,deleteLesson,getLessonById} from '../controllers/lessonController.js';
-
+import {
+  createLesson,
+  updateLesson,
+  deleteLesson,
+  getLessonById,
+  getLessonPlaybackUrl,
+} from '../controllers/lessonController.js';
 import {protect,authorize} from '../middleware/authMiddleware.js';
 
 import {uploadLessonMedia} from '../middleware/uploadMiddleware.js';
 
 const router = express.Router();
+
+// ---> Get playback URL for a selected lesson.
+router.get('/:courseId/:lessonId/playback-url',protect,getLessonPlaybackUrl);
 
 // ---> Get lesson details.
 router.get('/:id', protect, getLessonById);
@@ -37,6 +45,6 @@ router.put(
 );
 
 // ---> Preserve the existing delete handler.
-router.delete('/:id', protect, deleteLesson);
+router.delete('/:id',protect,authorize('admin'),deleteLesson);
 
 export default router;

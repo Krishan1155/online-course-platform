@@ -25,9 +25,20 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  useEffect(() => {
-    loadUser();
-  }, [loadUser]);
+ useEffect(() => {
+  loadUser();
+
+  const handleAuthLogout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+  };
+
+  window.addEventListener('auth:logout', handleAuthLogout);
+
+  return () => {
+    window.removeEventListener('auth:logout', handleAuthLogout);
+  };
+}, [loadUser]);
 
   const login = async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password });
@@ -67,10 +78,17 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
-  const logout = () => {
+  const logout = async () => {
+  try 
+  {
+    await api.post('/auth/logout');
+  } 
+  finally 
+  {
     localStorage.removeItem('token');
     setUser(null);
-  };
+  }
+};
 
   const updateUser = (userData) => {
     setUser((prev) => ({ ...prev, ...userData }));

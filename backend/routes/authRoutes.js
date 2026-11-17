@@ -10,6 +10,7 @@ import {
   resendVerification,
   forgotPassword,
   resetPassword,
+  refreshAccessToken,
 } from '../controllers/authController.js';
 
 import { protect } from '../middleware/authMiddleware.js';
@@ -22,13 +23,15 @@ router.post('/login', login);
 
 router.post('/google', googleLogin);
 
-router.post('/logout', protect, logout);
+router.post('/refresh', refreshAccessToken);
+
+router.post('/logout', logout);
 
 router.get('/me', protect, getMe);
 
 router.get('/verify-email/:token', verifyEmail);
 
-router.post('/resend-verification', protect, resendVerification);
+router.post('/resend-verification', resendVerification);
 
 router.post('/forgot-password', forgotPassword);
 

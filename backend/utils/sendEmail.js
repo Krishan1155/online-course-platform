@@ -7,6 +7,7 @@ export const isEmailConfigured = () => {
   return Boolean(user && pass);
 };
 
+
 const sendEmail = async ({ email, subject, html }) => {
 
   if (!isEmailConfigured())
