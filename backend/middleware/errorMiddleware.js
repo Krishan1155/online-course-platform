@@ -5,16 +5,22 @@ const notFound = (req, res, next) => {
 };
 
 const errorHandler = (err, req, res, next) => {
-  let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  let statusCode = res.statusCode === 200 ? 500 : res.statusCode; //default response status is usually 200.
   let message = err.message;
 
+
+  //Mongoose can throw a CastError when 
+  //it cannot convert a supplied value into the expected schema type.
   if (err.name === 'CastError') 
   {
     statusCode = 404;
     message = 'Resource not found';
   }
 
-  if (err.code === 11000) {   //Handle duplicate data
+
+  //handles MongoDB duplicate-key errors
+  if (err.code === 11000) 
+  {   
     statusCode = 400;
     const field = Object.keys(err.keyValue)[0];
     message = `${field} already exists`;

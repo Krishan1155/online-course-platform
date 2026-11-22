@@ -3,7 +3,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 export const setRefreshTokenCookie = (res, token) => {
   res.cookie('refreshToken', token, {
-    httpOnly: true,
+    httpOnly: true, //document.cookie
     secure: isProduction,
     sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,

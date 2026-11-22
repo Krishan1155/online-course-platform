@@ -43,7 +43,8 @@ export const protect = async (req, res, next) => {
     }
 
     next();
-  } catch (error) {
+  } 
+  catch (error) {
     return res.status(401).json({
       success: false,
       message: 'Access token expired or invalid',
@@ -81,8 +82,8 @@ export const optionalProtect = async (req, res, next) => {
   try 
   {
     const decoded = jwt.verify(token, process.env.JWT_SECRET, {
-  algorithms: ['HS256'],
-});
+                    algorithms: ['HS256'],
+    });
 
 if (decoded.type !== 'access') 
 {
@@ -90,21 +91,10 @@ if (decoded.type !== 'access')
 }
 
 req.user = await User.findById(decoded.id).select('-password');
-  } catch (error) {
+  } 
+  catch (error) {
     // Ignore invalid token for optional auth
   }
 
-  next();
-};
-
-
-export const verifiedOnly = (req, res, next) => {
-  if (!req.user.isVerified) 
-  {
-    return res.status(403).json({
-      success: false,
-      message: 'Please verify your email before accessing this resource',
-    });
-  }
   next();
 };

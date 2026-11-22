@@ -388,18 +388,7 @@ export const updateLesson = asyncHandler(async (req, res) => {
       lesson.description = description;
     }
 
-    if (order !== undefined) 
-    {
-      const parsedOrder = Number(order);
-
-      if (!Number.isInteger(parsedOrder) || parsedOrder < 1) 
-      {
-        res.status(400);
-        throw new Error('Order must be a positive integer.');
-      }
-      lesson.order = parsedOrder;
-    }
-
+    
 
 // ----> Video
 
@@ -469,14 +458,17 @@ if (nextContentType === 'video')
         throw new Error('A document lesson cannot contain a video upload.');
       }
 
-     // Remove the old video only when switching from video to document.
+     // If the previous lesson was a video and the admin changes it to a document, 
+    // collect the old video S3 key so we can delete the video after saving.
       if (lesson.contentType === 'video' && lesson.videoKey) 
       {
         oldKeysToDelete.push(lesson.videoKey);
       }
 
+      //Clear the old video reference from the lesson.
       lesson.videoKey = '';
 
+      // Set the new document type (PDF, URL, or text).
       lesson.documentType = nextDocumentType;
 
       // Save estimated reading duration for documents.
@@ -631,7 +623,20 @@ export const deleteLesson = asyncHandler(async (req, res) => {
   const courseId = lesson.course;
   const oldKeys = [lesson.videoKey, lesson.documentKey];
 
+  const moduleId = lesson.module;
+  const deletedOrder = lesson.order;
+
   await lesson.deleteOne();
+
+  await Lesson.updateMany(
+  {
+    module: moduleId,
+    order: { $gt: deletedOrder },
+  },
+  {
+    $inc: { order: -1 },
+  }
+);
 
   await refreshCourseProgress(courseId);
   await updateCourseStats(courseId);
@@ -673,6 +678,20 @@ export const getLessonById = asyncHandler(async (req, res) => {
 export const getLessonPlaybackUrl = asyncHandler(async (req, res) => {
   const { courseId, lessonId } = req.params;
 
+  //Find the selected lesson.
+  const lesson = await Lesson.findOne({
+    _id: lessonId,
+    course: courseId,
+  });
+
+
+  if (!lesson) 
+  {
+    res.status(404);
+    throw new Error('Lesson not found');
+  }
+
+
   // Check student enrollment.
   const enrollment = await Enrollment.findOne({
   user: req.user._id,
@@ -682,29 +701,17 @@ export const getLessonPlaybackUrl = asyncHandler(async (req, res) => {
 
 });
 
+ 
+
   if (!enrollment) 
   {
     res.status(403);
     throw new Error('You are not enrolled in this course');
   }
 
-  //Find the selected lesson.
-  const lesson = await Lesson.findOne({
-    _id: lessonId,
-    course: courseId,
-  });
-
-  if (!lesson) 
-  {
-    res.status(404);
-    throw new Error('Lesson not found');
-  }
-
+  
   // Get the S3 key.
-  const mediaKey =
-    lesson.contentType === 'video'
-      ? lesson.videoKey
-      : lesson.documentKey;
+  const mediaKey =lesson.contentType === 'video'? lesson.videoKey : lesson.documentKey;
 
   if (!mediaKey) 
   {

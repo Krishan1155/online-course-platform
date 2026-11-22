@@ -35,7 +35,8 @@ export const s3 = new S3Client({
 
 export const uploadToS3 = async ({filePath,key,contentType,}) => {
 
-  const fileStats = await stat(filePath);  //gets information about the local file. suppose your video size is 100 MB.
+  const fileStats = await stat(filePath);  //gets information about the local file. in bytes
+  //suppose your video size is 100 MB.
 
   await s3.send(
     new PutObjectCommand({
@@ -80,13 +81,13 @@ export const createSignedMediaUrl = async (key) => {
   }
 
 
-  const resolvedKeyPath = path.resolve(process.cwd(), privateKeyPath);
+  const resolvedKeyPath = path.resolve(process.cwd(), privateKeyPath); //create path for reading private key 
   const privateKey = await readFile(resolvedKeyPath, 'utf8'); //Reads the file as text.
   
 
   const url = `https://${domain}/${key
     .split('/')
-    .map(encodeURIComponent)
+    .map(encodeURIComponent) //If you don't use encodeURIComponent at all, special characters like spaces, #, ?, or & inside a filename will break the URL.
     .join('/')}`;
 
   const expiresAt = Date.now() + expiresIn * 1000;
@@ -112,7 +113,7 @@ export const deleteS3Prefix = async (prefix) => {
     throw new Error('S3 prefix is required');
   }
 
-  let continuationToken;
+  let continuationToken; //for pagination.
 
   do {
     const listed = await s3.send(
@@ -132,7 +133,7 @@ export const deleteS3Prefix = async (prefix) => {
           Bucket: bucket,
           Delete: {
             Objects: objects,
-            Quiet: false,
+            Quiet: false,  //include information about successful deletions in its response.
           },
         })
       );
@@ -145,6 +146,9 @@ export const deleteS3Prefix = async (prefix) => {
       }
     }
 
-    continuationToken = listed.IsTruncated ? listed.NextContinuationToken : undefined;
+    //whether more objects remain beyond the current response.
+    continuationToken = listed.IsTruncated ? 
+           listed.NextContinuationToken : undefined;
+           
   }while(continuationToken);
 };

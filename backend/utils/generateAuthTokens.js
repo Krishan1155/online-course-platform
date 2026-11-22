@@ -24,7 +24,7 @@ export const generateRefreshToken = () => {
   return crypto.randomBytes(64).toString('hex');
 };
 
-// Hash refresh token
+// Hash refresh token for mongodb
 export const hashRefreshToken = (token) => {
   return crypto
     .createHash('sha256')

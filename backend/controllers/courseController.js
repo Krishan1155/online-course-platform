@@ -44,11 +44,14 @@ export const getCourses = asyncHandler(async (req, res) => {
 
   if (searchText) 
   {
-    //The intention is to escape special regular-expression characters.
+    //Regular expressions (Regex) use special characters to perform pattern matching
     const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    //It adds a backslash before special Regex characters so they are treated as normal characters.
+    //c++ -> c\\+\\+
 
     const searchRegex = new RegExp(escapeRegex(searchText),'i');
 
+    //Search in multiple fields
     filter.$or = [
       { title: searchRegex },
       { description: searchRegex },
@@ -57,6 +60,8 @@ export const getCourses = asyncHandler(async (req, res) => {
     ];
   }
 
+  //adding in filter 
+
   if (category) filter.category = category;
 
   if (level) filter.level = level;
@@ -64,6 +69,7 @@ export const getCourses = asyncHandler(async (req, res) => {
   if (minPrice !== undefined && minPrice !== '') 
   {
     filter.price = {
+      //It preserves existing price conditions when adding another condition.
       ...filter.price,
       $gte: Number(minPrice),
     };
@@ -113,7 +119,7 @@ export const getCourses = asyncHandler(async (req, res) => {
   return 3;
     };
 
-    result = [...courses].sort((a, b) => getRank(a) - getRank(b));
+    result = [...courses].sort((a, b) => getRank(a) - getRank(b)); //puts the lower-ranked number first.
   }
 
   res.json({
@@ -169,7 +175,7 @@ export const getCourseById = asyncHandler(async (req, res) => {
       course: course._id,
     });
 
-    isEnrolled = !!enrollment;                                   //The double exclamation mark converts a value to a Boolean.
+    isEnrolled = !!enrollment;   //The double exclamation mark converts a value to a Boolean.
   }
 
   res.json({
@@ -308,7 +314,9 @@ export const deleteCourse = asyncHandler(async (req, res) => {
       await Progress.deleteMany({ course: courseId }).session(session);
 
       await Course.deleteOne({ _id: courseId }).session(session);
+
     });
+    // delete from s3.
   } 
   finally {
     await session.endSession(); //closes the session after the transaction finishes

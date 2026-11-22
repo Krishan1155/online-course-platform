@@ -15,8 +15,8 @@ const sendEmail = async ({ email, subject, html }) => {
     throw new Error('Email is not configured. Check EMAIL_USER and EMAIL_PASS in .env');
   }
 
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
+  const transporter = nodemailer.createTransport({  //connection between backend and Gmail
+    service: 'gmail',  //use Gmail as your email service
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,

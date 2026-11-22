@@ -4,17 +4,15 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { mkdirSync } from 'node:fs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url); //give a current js file
+const __dirname = path.dirname(__filename);  //extracts the directory from the file path
 
 const uploadsDir = path.join(__dirname, '../uploads');
 const lessonTempDir = path.join(uploadsDir, 'lesson-temp');
 
 // Ensure upload directories exist.
-for (const directory of [
-  uploadsDir,
-  lessonTempDir,
-]) {
+for (const directory of [uploadsDir,lessonTempDir,]) 
+{
   mkdirSync(directory, { recursive: true });
 }
 
@@ -36,7 +34,9 @@ const thumbnailStorage = multer.diskStorage({
   },
 });
 
+//validate thumbnail img
 const imageFilter = (_req, file, cb) => {
+
   const allowedTypes = [
     'image/jpeg',
     'image/png',
@@ -44,12 +44,13 @@ const imageFilter = (_req, file, cb) => {
     'image/gif',
   ];
 
-  if (allowedTypes.includes(file.mimetype)) {
-    return cb(null, true);
-  }
-
+  if (allowedTypes.includes(file.mimetype)) 
+  {
+    return cb(null, true); //multer accept the file
+  } 
   cb(new Error('Only JPEG, PNG, WEBP, and GIF images are allowed.'));
 };
+
 
 export const uploadThumbnail = multer({
   storage: thumbnailStorage,
