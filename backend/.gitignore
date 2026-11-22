@@ -1,5 +1,7 @@
 # Dependencies
 node_modules/
+uploads/*
+!uploads/.gitkeep
 
 
 cloudfront-public-key.pem
